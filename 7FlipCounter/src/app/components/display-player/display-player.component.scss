@@ -1,20 +1,37 @@
-.name-label {
-  width: 200px;
+main {
+  background-color: yellow;
+  display: flex;
+  width: 80vw;
+  height: 10vh;
+}
+
+.name-container {
+  background-color: black;
+  display: flex;
+  width: 20vw;
+  height: 70%;
 }
 
 .spinner-container {
+  background-color: red;
+  width: 100px;
+  height: 100px;
   position: relative;
-  display: inline-block;
+  display: flex;
   align-content: center;
   align-items: center;
-  height: 60px;
 }
 
 .spinner-text {
   position: absolute;
-  top: 150%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 3rem;
   font-weight: bold;
+}
+
+.add-value-container {
+  background-color: blue;
+  display: flex;
 }

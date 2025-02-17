@@ -28,7 +28,14 @@ import {MatInput} from '@angular/material/input';
 })
 export class DisplayPlayerComponent {
   playerName=signal<string>('');
-  mode: ProgressSpinnerMode = 'determinate';
   counter = signal<number>(0);
-  maxValueCounter = signal<number>(200);
+  mode: ProgressSpinnerMode = 'determinate';
+  inputValue = signal<number>(0);
+
+
+
+  focusOut() {
+    const currentValue = Number(this.inputValue());
+    this.counter.update( curr => curr + currentValue);
+  }
 }
