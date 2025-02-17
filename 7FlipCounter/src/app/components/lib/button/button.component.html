@@ -1,0 +1,11 @@
+<button
+  mat-button
+  [type]="type()"
+  [color]="color()"
+  [disabled]="disabled()"
+  [ngClass]="buttonClass()"
+  (click)="onClick()"
+>
+  <mat-icon *ngIf="icon()">{{ icon() }}</mat-icon>
+  {{ label() }}
+</button>

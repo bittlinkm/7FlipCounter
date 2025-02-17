@@ -1,0 +1,17 @@
+<ng-container *ngIf="src">
+  <div
+    *ngIf="isUrl()"
+    class="fill-inherit"
+    [style.width.px]="size()"
+    [style.height.px]="size()"
+  ></div>
+  <svg
+    *ngIf="!isUrl()"
+    [attr.width]="size() + 'px'"
+    [attr.height]="size() + 'px'"
+    viewBox="0 0 24 24"
+    class="fill-inherit"
+  >
+    <path [attr.d]="src()" />
+  </svg>
+</ng-container>

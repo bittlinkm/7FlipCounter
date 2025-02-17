@@ -1,0 +1,23 @@
+<mat-form-field   appearance="fill" floatLabel="always">
+  <mat-label>{{ label() }}</mat-label>
+
+  <input
+    matInput
+    #textInput="ngModel"
+    [id]="id()"
+    [type]="type()"
+    [readonly]="readonly()"
+    [disabled]="disabled() || false"
+    class="input-test"
+    [(ngModel)]="outputValue"
+  />
+  <small *ngIf="helperText()">
+    {{ helperText() }}
+  </small>
+  <small *ngIf="!isValid()">
+  </small>
+  <mat-error *ngIf="textInput.invalid && textInput.errors">
+    {{ (textInput.errors) }}
+  </mat-error>
+</mat-form-field>
+
