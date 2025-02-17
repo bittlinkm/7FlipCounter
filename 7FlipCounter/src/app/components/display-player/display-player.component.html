@@ -2,8 +2,11 @@
   <section class="name-container">
     <mat-form-field>
       <mat-label>Spieler</mat-label>
-      <input matInput type="text" [(ngModel)]="playerName">
-      @if (playerName()) {
+      <input matInput type="text"
+             [(ngModel)]="playerName"
+             [readonly]="isChangeable()"
+      >
+      @if (playerName() && !isChangeable()) {
         <button  matSuffix mat-icon-button aria-label="Clear" (click)="playerName.set('')">
           <mat-icon>close</mat-icon>
         </button>
@@ -15,7 +18,7 @@
     <mat-card-content>
       <mat-progress-spinner
         [mode]="mode"
-        [value]="counter()"
+        [value]="spinnerValue()"
       >
       </mat-progress-spinner>
       <div class="spinner-text">{{counter()}}</div>
@@ -24,8 +27,7 @@
 
   <section class="add-value-container">
     <mat-form-field>
-      <mat-label>Clearable input</mat-label>
-      <input matInput type="text"
+      <input matInput type="number"
              [(ngModel)]="inputValue"
              (focusout)="focusOut()"
       >

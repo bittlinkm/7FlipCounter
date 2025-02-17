@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, computed, effect, linkedSignal, signal} from '@angular/core';
 import {MatFormField, MatFormFieldModule, MatLabel} from '@angular/material/form-field';
 import {MatIcon, MatIconModule} from '@angular/material/icon';
 import {FormsModule} from '@angular/forms';
@@ -29,13 +29,15 @@ import {MatInput} from '@angular/material/input';
 export class DisplayPlayerComponent {
   playerName=signal<string>('');
   counter = signal<number>(0);
-  mode: ProgressSpinnerMode = 'determinate';
   inputValue = signal<number>(0);
-
+  spinnerValue = signal<number>(0);
+  isChangeable = linkedSignal<boolean>(() => this.counter() > 0);
+  mode: ProgressSpinnerMode = 'determinate';
 
 
   focusOut() {
     const currentValue = Number(this.inputValue());
     this.counter.update( curr => curr + currentValue);
+    this.spinnerValue.set(this.counter()/2);
   }
 }
