@@ -10,6 +10,7 @@ export class PlayerService {
   createPlayer(name: string): Player {
     const player: Player = {
       id: this.generateUniqueId(),
+      position: Math.random(),
       name,
       score: []
     };
@@ -28,11 +29,51 @@ export class PlayerService {
     return JSON.parse(playerJson);
   }
 
+  getAllPlayersFromLocalStorage(): Player[] {
+    const currentPlayers: Player[] = [];
+
+    this.playerIds.forEach( playerId => {
+      const playerJson = localStorage.getItem(playerId);
+      if(playerJson) {
+        const currentPlayer: Player = JSON.parse(playerJson);
+        currentPlayers.push(currentPlayer);
+
+      } else {
+        console.log('No player' + playerId + 'found in local storage');
+      }
+    });
+    return currentPlayers;
+  }
+
+  getPlayerScore(playerId: string): number {
+    const playerJson: string | null = localStorage.getItem(playerId);
+    if (!playerJson) {
+      throw new Error(`Player with id ${playerId} not found in local storage.`);
+    }
+
+    const currentPlayer = JSON.parse(playerJson);
+    return currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
+  }
+
   updatePlayerScore(id: string, score: number): void {
     const player = this.getPlayerFromLocalStorage(id);
     player.score.push(score);
 
     localStorage.setItem(player.id, JSON.stringify(player));
+  }
+
+  deletePlayerFromLocalStorage(playerId: string): void {
+    const playerJson: string | null = localStorage.getItem(playerId);
+
+    if (!playerJson) {
+      throw new Error(`Player with id ${playerId} not found in local storage.`);
+    }
+    localStorage.removeItem(playerId);
+    this.deletePlayerIdFromLocalIds(playerId);
+  }
+
+  private deletePlayerIdFromLocalIds(playerId: string): void {
+    this.playerIds.delete(playerId);
   }
 
   private generateUniqueId(): string {
