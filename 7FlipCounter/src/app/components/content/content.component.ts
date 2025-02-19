@@ -1,14 +1,14 @@
 import {
   AfterViewInit,
   Component,
-  effect,
+  effect, ElementRef,
   inject,
   linkedSignal,
   model,
   OnDestroy,
-  OnInit,
+  OnInit, QueryList, signal,
   ViewChild,
-  viewChild
+  viewChild, ViewChildren
 } from '@angular/core';
 import {GameService} from '../../services/game.service';
 import {Player} from '../../models/player';
@@ -59,13 +59,15 @@ import {FormsModule} from '@angular/forms';
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
  readonly gameService = inject(GameService);
  readonly addPlayerDialog = inject(MatDialog);
- readonly editPlayersCheckBox = model.required<boolean>();
+ readonly editPlayersCheckBox = signal<boolean>(false);
  readonly confirmDialog = inject(MatDialog);
  private _liveAnnouncer = inject(LiveAnnouncer);
  protected dataSource = new MatTableDataSource<Player>([]);
  protected selection = new SelectionModel<Player>(false, []);
+ readonly tempScores = signal<Map<string, number>>(new Map());
  @ViewChild('table', {static: true}) table!: MatTable<Player>;
  @ViewChild(MatSort) sort!: MatSort;
+ @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
 
   linkedDisplayedColumns = linkedSignal(() => {
     if (this.editPlayersCheckBox()) {
@@ -82,6 +84,8 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       switch (property) {
         case 'score':
           return this.counter(player);
+        case 'position':
+          return Number(player.position);
         default:
           return player[property];
       }
@@ -101,11 +105,13 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   spinnerValue(player: Player): number {
-    return this.gameService.getPlayerScore(player.id)/2;
+    const tempScore = this.tempScores().get(player.id) || 0;
+    return (this.gameService.getPlayerScore(player.id) + tempScore)/2;
   }
 
   counter(player: Player): number {
-    return this.gameService.getPlayerScore(player.id);
+    const tempScore = this.tempScores().get(player.id) || 0;
+    return this.gameService.getPlayerScore(player.id)+tempScore;
   }
 
   openAddPlayerDialog() {
@@ -150,7 +156,37 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   newRound(): void {
+   if (!this.hasAllPlayersRoundScore()) {
+     return
+   }
+    this.tempScores().forEach((score, playerId) => {
+      this.gameService.updatePlayerScore(playerId, score);
+    });
 
+    this.tempScores.set(new Map());
+
+    this.dataSource.data = this.gameService.getAllPlayer();
+
+    this.roundInputs.forEach(input => {
+      input.nativeElement.value = '';
+    })
+  }
+
+  private hasAllPlayersRoundScore(): boolean {
+    const playersWithoutScore: string[] = [];
+
+    this.dataSource.data.forEach(player => {
+      if(!this.tempScores().has(player.id)) {
+        playersWithoutScore.push(player.name);
+      }
+    });
+
+    if (playersWithoutScore.length > 0) {
+      const missingScores = playersWithoutScore.join(', ');
+      alert(`Folgende Spieler haben keine Punkte eingegeben: ${missingScores}`);
+      return false;
+    }
+    return true;
   }
 
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
@@ -167,18 +203,13 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.table.renderRows();
   }
 
-  focusOutFromRoundInput(player: Player, event: FocusEvent): void {
-    const inputElement = event.target as HTMLInputElement;
-    const roundScore = Number(inputElement.value);
-
-   // this.gameService.updatePlayerScore(player.id, roundScore);
-  }
-
   keyUp(player: Player, event: KeyboardEvent): void {
     const inputElement = event.target as HTMLInputElement;
     const roundScore = Number(inputElement.value);
-    //const currentScore = this.gameService.getPlayerScore(player.id);
-    //this.gameService.updatePlayerScore(player.id, roundScore);
+
+    const currentTempScores = new Map(this.tempScores());
+    currentTempScores.set(player.id, roundScore);
+    this.tempScores.set(currentTempScores);
   }
 
   ngOnDestroy(): void {
