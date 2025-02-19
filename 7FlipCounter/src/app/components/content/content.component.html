@@ -9,6 +9,7 @@
   <section class="table-container">
     <mat-table #table [dataSource]="dataSource" class="mat-elevation-z8"
                matSort (matSortChange)="sortChange($event)"
+               [cdkDropListDisabled]="!editPlayersCheckBox()"
                cdkDropList [cdkDropListData]="dataSource.data" (cdkDropListDropped)="dragAndDrop($event)"
     >
 
@@ -35,7 +36,9 @@
 
       <!-- No Column -->
       <ng-container matColumnDef="position">
-        <mat-header-cell  *matHeaderCellDef sticky class="mat-column-position"> No.</mat-header-cell>
+        <mat-header-cell  *matHeaderCellDef sticky class="mat-column-position"
+                          mat-sort-header sortActionDescription="Sort by position"
+        > No.</mat-header-cell>
         <mat-cell *matCellDef="let element;" class="mat-column-position" >
           <span>{{ element.position }}</span>
         </mat-cell>
@@ -55,12 +58,15 @@
                          mat-sort-header sortActionDescription="Sort by score"
         > Score </mat-header-cell>
         <mat-cell *matCellDef="let element" class="mat-column-score">
-          <mat-progress-spinner
-            diameter="20"
-            mode="determinate"
-            [value]="spinnerValue(element)"
-            [strokeWidth]="3">
-          </mat-progress-spinner>
+          <div class="spinner-container">
+            <mat-progress-spinner
+              diameter="40"
+              mode="determinate"
+              [value]="spinnerValue(element)"
+              [strokeWidth]="3">
+            </mat-progress-spinner>
+          </div>
+
           <div class="spinner-text">{{counter(element)}}</div>
         </mat-cell>
       </ng-container>
@@ -69,7 +75,7 @@
       <ng-container matColumnDef="round">
         <mat-header-cell  *matHeaderCellDef> Runde </mat-header-cell>
         <mat-cell *matCellDef="let element"> {{element.symbol}}
-          <input  type="number" (focusout)="focusOutFromRoundInput(element, $event)" (keyup)="keyUp(element, $event)">
+          <input #roundInput  type="number" (keyup)="keyUp(element, $event)">
         </mat-cell>
       </ng-container>
 

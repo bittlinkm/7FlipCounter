@@ -66,14 +66,32 @@ main {
 }
 
 .mat-column-score {
-  position: relative;
+  width: 120px;
+  min-width: 120px;
+  text-align: center;
+  justify-content: center;
 }
 
-.mat-column-score .spinner-text {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+.spinner-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .spinner-text {
+    position: absolute;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .mat-column-round input {
