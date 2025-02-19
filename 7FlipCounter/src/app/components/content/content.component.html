@@ -1,68 +1,84 @@
 <main>
-  <div class="demo-button-container">
+  <div class="button-container">
     <button mat-raised-button (click)="openAddPlayerDialog()">Spieler hinzufügen</button>
-
+    <button mat-raised-button (click)="newGame()">Neues Spiel</button>
+    <button mat-raised-button (click)="newRound()">Nächste Runde</button>
+    <mat-checkbox [(ngModel)]="editPlayersCheckBox" (ngModelChange)="editPlayersCheckBox.set($event)">Bearbeiten</mat-checkbox>
   </div>
 
+  <section class="table-container">
+    <mat-table #table [dataSource]="dataSource" class="mat-elevation-z8"
+               matSort (matSortChange)="sortChange($event)"
+               cdkDropList [cdkDropListData]="dataSource.data" (cdkDropListDropped)="dragAndDrop($event)"
+    >
 
-  <mat-table #table [dataSource]="dataSource" class="mat-elevation-z8" matSort
-         cdkDropList [cdkDropListData]="dataSource.data" (cdkDropListDropped)="drop($event)"
-  >
+      <!-- Delete Column -->
+      <ng-container matColumnDef="delete" >
+        <mat-header-cell *matHeaderCellDef sticky class="mat-column-delete"
+        ></mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-delete">
+          <button mat-icon-button color="warn" (click)="openDeleteDialog(element)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
 
-    <ng-container matColumnDef="delete">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button mat-icon-button color="warn" (click)="openDeleteDialog(element)">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </mat-cell>
-    </ng-container>
+      <!-- Order Column -->
+      <ng-container matColumnDef="order">
+        <mat-header-cell  *matHeaderCellDef sticky class="mat-column-order"></mat-header-cell>
+        <mat-cell *matCellDef="let element"  class="mat-column-order" >
+          <div class="drag-handle" cdkDragHandle>
+            <mat-icon class="example-drag-cursor">reorder</mat-icon>
+          </div>
+        </mat-cell>
+      </ng-container>
 
-    <!-- No Column -->
-    <ng-container matColumnDef="position">
-      <mat-header-cell  *matHeaderCellDef > No. </mat-header-cell>
-      <mat-cell *matCellDef="let element; let i = index" >
-        <div class="drag-handle" cdkDragHandle>
-          <mat-icon class="example-drag-cursor">reorder</mat-icon>
-        </div>
-        <span>{{i +1}}</span>
-      </mat-cell>
-    </ng-container>
+      <!-- No Column -->
+      <ng-container matColumnDef="position">
+        <mat-header-cell  *matHeaderCellDef sticky class="mat-column-position"> No.</mat-header-cell>
+        <mat-cell *matCellDef="let element;" class="mat-column-position" >
+          <span>{{ element.position }}</span>
+        </mat-cell>
+      </ng-container>
 
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
-    </ng-container>
+      <!-- Name Column -->
+      <ng-container matColumnDef="name" >
+        <mat-header-cell *matHeaderCellDef sticky
+                         mat-sort-header sortActionDescription="Sort by name"
+        > Name </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+      </ng-container>
 
-    <!-- Score Column -->
-    <ng-container matColumnDef="score">
-      <mat-header-cell *matHeaderCellDef> Score </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <mat-progress-spinner
-          diameter="20"
-          mode="determinate"
-          [value]="spinnerValue(element)"
-          [strokeWidth]="3">
-        </mat-progress-spinner>
-        <div class="spinner-text">{{counter(element)}}</div>
-      </mat-cell>
-    </ng-container>
+      <!-- Score Column -->
+      <ng-container matColumnDef="score">
+        <mat-header-cell *matHeaderCellDef sticky class="mat-column-score"
+                         mat-sort-header sortActionDescription="Sort by score"
+        > Score </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="mat-column-score">
+          <mat-progress-spinner
+            diameter="20"
+            mode="determinate"
+            [value]="spinnerValue(element)"
+            [strokeWidth]="3">
+          </mat-progress-spinner>
+          <div class="spinner-text">{{counter(element)}}</div>
+        </mat-cell>
+      </ng-container>
 
-    <!-- Runde Column -->
-    <ng-container matColumnDef="round">
-      <mat-header-cell  *matHeaderCellDef> Runde </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.symbol}}
-        <input  type="number" (focusout)="focusOutFromRoundInput(element, $event)">
-      </mat-cell>
-    </ng-container>
+      <!-- Runde Column -->
+      <ng-container matColumnDef="round">
+        <mat-header-cell  *matHeaderCellDef> Runde </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.symbol}}
+          <input  type="number" (focusout)="focusOutFromRoundInput(element, $event)" (keyup)="keyUp(element, $event)">
+        </mat-cell>
+      </ng-container>
 
-    <mat-header-row  *matHeaderRowDef="displayedColumns sticky: true" ></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"
-             cdkDrag
-             [cdkDragData]="row"
-        (click)="selection.toggle(row)">
-    </mat-row>
-  </mat-table>
-
+      <mat-header-row  *matHeaderRowDef="linkedDisplayedColumns(); sticky: true" ></mat-header-row>
+      <mat-row *matRowDef="let row; columns: linkedDisplayedColumns();"
+               cdkDrag
+               [cdkDragData]="row"
+               (click)="selection.toggle(row)">
+      </mat-row>
+    </mat-table>
+  </section>
 </main>

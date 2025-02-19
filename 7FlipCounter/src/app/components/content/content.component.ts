@@ -1,5 +1,16 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild, viewChild} from '@angular/core';
-import {PlayerService} from '../../services/player.service';
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  inject,
+  linkedSignal,
+  model,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  viewChild
+} from '@angular/core';
+import {GameService} from '../../services/game.service';
 import {Player} from '../../models/player';
 import {
   MatCell,
@@ -19,7 +30,11 @@ import {MatIcon} from '@angular/material/icon';
 import {ConfirmDialogComponent} from '../confirm-dialog/confirm-dialog.component';
 import {MatProgressSpinner, ProgressSpinnerMode} from '@angular/material/progress-spinner';
 import {TextInputComponent} from '../lib/text-input/text-input.component';
-import {MatSort, MatSortHeader} from '@angular/material/sort';
+import {MatSort, MatSortHeader, Sort} from '@angular/material/sort';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {DisplayPlayerComponent} from '../display-player/display-player.component';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-content',
@@ -36,23 +51,33 @@ import {MatSort, MatSortHeader} from '@angular/material/sort';
     MatRowDef,
     CdkDropList,
     MatIcon,
-    CdkDrag, CdkDragHandle, MatIconButton, MatProgressSpinner, TextInputComponent, MatSort, MatSortHeader],
+    CdkDrag, CdkDragHandle, MatIconButton, MatProgressSpinner, MatSort, MatSortHeader, MatCheckbox, FormsModule],
   templateUrl: './content.component.html',
   styleUrl: './content.component.scss',
   standalone: true
 })
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
- readonly playerService = inject(PlayerService);
+ readonly gameService = inject(GameService);
  readonly addPlayerDialog = inject(MatDialog);
- readonly deleteDialog = inject(MatDialog);
- displayedColumns: string[] = [ 'delete','position', 'name', 'score', 'round'];
- dataSource = new MatTableDataSource<Player>([]);
- selection = new SelectionModel<Player>(false, []);
-// table = viewChild<MatTable<Player>>('table') ;
-  @ViewChild('table', {static: true}) table!: MatTable<Player>;
-  @ViewChild(MatSort) sort!: MatSort;
+ readonly editPlayersCheckBox = model.required<boolean>();
+ readonly confirmDialog = inject(MatDialog);
+ private _liveAnnouncer = inject(LiveAnnouncer);
+ protected dataSource = new MatTableDataSource<Player>([]);
+ protected selection = new SelectionModel<Player>(false, []);
+ @ViewChild('table', {static: true}) table!: MatTable<Player>;
+ @ViewChild(MatSort) sort!: MatSort;
+
+  linkedDisplayedColumns = linkedSignal(() => {
+    if (this.editPlayersCheckBox()) {
+      return ['delete','order', 'position', 'name', 'score', 'round'];
+    } else {
+      return ['position','name', 'score', 'round'];
+    }
+  });
 
   ngOnInit() {
+    this.editPlayersCheckBox.set(false);
+
     this.dataSource.sortingDataAccessor = (player, property) => {
       switch (property) {
         case 'score':
@@ -67,12 +92,20 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource.sort = this.sort;
   }
 
+  async sortChange(sortState: Sort): Promise<void> {
+    if (sortState.direction) {
+      await this._liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
+    } else {
+      await this._liveAnnouncer.announce('Sorting cleared');
+    }
+  }
+
   spinnerValue(player: Player): number {
-    return this.playerService.getPlayerScore(player.id)/2;
+    return this.gameService.getPlayerScore(player.id)/2;
   }
 
   counter(player: Player): number {
-    return this.playerService.getPlayerScore(player.id);
+    return this.gameService.getPlayerScore(player.id);
   }
 
   openAddPlayerDialog() {
@@ -80,14 +113,14 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
-        let newPlayer = this.playerService.createPlayer(result);
-        this.dataSource.data = [...this.dataSource.data,newPlayer];
+        this.gameService.createPlayer(result);
+        this.dataSource.data = this.gameService.getAllPlayer()
       }
     });
   }
 
   openDeleteDialog(player: Player): void {
-    const dialogRef = this.addPlayerDialog.open(ConfirmDialogComponent);
+    const dialogRef = this.confirmDialog.open(ConfirmDialogComponent);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
@@ -108,16 +141,28 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    this.playerService.deletePlayerFromLocalStorage(player.id);
+    this.gameService.deletePlayerFromStorage(player.position);
   }
 
-  drop(event: CdkDragDrop<Player[]>): void {
+  newGame(): void {
+    this.gameService.newGame();
+    this.dataSource.data = this.gameService.getAllPlayer();
+  }
+
+  newRound(): void {
+
+  }
+
+  dragAndDrop(event: CdkDragDrop<Player[]>): void {
     const previousIndex = this.dataSource.data.findIndex(d => d === event.item.data);
     const currentIndex = event.currentIndex;
     if(previousIndex !== currentIndex) {
       moveItemInArray(this.dataSource.data, previousIndex, currentIndex);
+      // Update positions after moving
+      this.dataSource.data.forEach((player, index) => {
+        player.position = index + 1;
+      });
       this.dataSource.data = [...this.dataSource.data];
-
     }
     this.table.renderRows();
   }
@@ -126,10 +171,17 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     const inputElement = event.target as HTMLInputElement;
     const roundScore = Number(inputElement.value);
 
-    this.playerService.updatePlayerScore(player.id, roundScore);
+   // this.gameService.updatePlayerScore(player.id, roundScore);
+  }
+
+  keyUp(player: Player, event: KeyboardEvent): void {
+    const inputElement = event.target as HTMLInputElement;
+    const roundScore = Number(inputElement.value);
+    //const currentScore = this.gameService.getPlayerScore(player.id);
+    //this.gameService.updatePlayerScore(player.id, roundScore);
   }
 
   ngOnDestroy(): void {
-    this.playerService.clearLocalStorage();
+    this.gameService.clearLocalStorage();
   }
 }

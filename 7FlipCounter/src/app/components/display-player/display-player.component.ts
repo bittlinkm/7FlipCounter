@@ -39,4 +39,5 @@ export class DisplayPlayerComponent {
     this.counter.update( curr => curr + currentValue);
     this.spinnerValue.set(this.counter()/2);
   }
+
 }
