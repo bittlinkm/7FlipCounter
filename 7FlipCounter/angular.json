@@ -29,7 +29,9 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/manifest.webmanifest",
+              "src/ngsw-config.json"
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
@@ -52,7 +54,8 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config.json"
+              "serviceWorker": "ngsw-config.json",
+              "baseHref": "/7-flip-counter/"
             },
             "development": {
               "optimization": false,
