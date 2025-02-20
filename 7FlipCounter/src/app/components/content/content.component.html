@@ -75,12 +75,16 @@
       <ng-container matColumnDef="round">
         <mat-header-cell  *matHeaderCellDef> Runde </mat-header-cell>
         <mat-cell *matCellDef="let element"> {{element.symbol}}
-          <input #roundInput  type="number" (keyup)="keyUp(element, $event)">
+          <input #roundInput
+                 type="number"
+                 (keyup)="keyUp(element, $event)"
+                 [disabled]="!isGameStarted()">
         </mat-cell>
       </ng-container>
 
       <mat-header-row  *matHeaderRowDef="linkedDisplayedColumns(); sticky: true" ></mat-header-row>
       <mat-row *matRowDef="let row; columns: linkedDisplayedColumns();"
+               [ngClass]="{'current-player': isCurrentPlayer(row.position)}"
                cdkDrag
                [cdkDragData]="row"
                (click)="selection.toggle(row)">

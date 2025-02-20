@@ -4,7 +4,7 @@ import {MatButton} from '@angular/material/button';
 import {ContentComponent} from '../content/content.component';
 
 @Component({
-  selector: 'app-confirm-addPlayerDialog',
+  selector: 'app-confirm-matDialog',
   imports: [
     MatDialogContent,
     MatDialogActions,

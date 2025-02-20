@@ -14,7 +14,7 @@ import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 
 @Component({
-  selector: 'app-add-player-addPlayerDialog',
+  selector: 'app-add-player-matDialog',
   imports: [
     MatDialogClose,
     MatDialogActions,

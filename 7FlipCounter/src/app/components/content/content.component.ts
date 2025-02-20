@@ -1,6 +1,6 @@
 import {
   AfterViewInit,
-  Component,
+  Component, computed,
   effect, ElementRef,
   inject,
   linkedSignal,
@@ -35,6 +35,8 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {DisplayPlayerComponent} from '../display-player/display-player.component';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {FormsModule} from '@angular/forms';
+import {SelectStartplayerDialogComponent} from '../select-startplayer-dialog/select-startplayer-dialog.component';
+import {NgClass} from '@angular/common';
 
 @Component({
   selector: 'app-content',
@@ -51,20 +53,21 @@ import {FormsModule} from '@angular/forms';
     MatRowDef,
     CdkDropList,
     MatIcon,
-    CdkDrag, CdkDragHandle, MatIconButton, MatProgressSpinner, MatSort, MatSortHeader, MatCheckbox, FormsModule],
+    CdkDrag, CdkDragHandle, MatIconButton, MatProgressSpinner, MatSort, MatSortHeader, MatCheckbox, FormsModule, NgClass],
   templateUrl: './content.component.html',
   styleUrl: './content.component.scss',
   standalone: true
 })
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
  readonly gameService = inject(GameService);
- readonly addPlayerDialog = inject(MatDialog);
+ readonly matDialog = inject(MatDialog);
  readonly editPlayersCheckBox = signal<boolean>(false);
- readonly confirmDialog = inject(MatDialog);
  private _liveAnnouncer = inject(LiveAnnouncer);
  protected dataSource = new MatTableDataSource<Player>([]);
  protected selection = new SelectionModel<Player>(false, []);
  readonly tempScores = signal<Map<string, number>>(new Map());
+ protected readonly isGameStarted = this.gameService.isGameStarted()
+ protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
  @ViewChild('table', {static: true}) table!: MatTable<Player>;
  @ViewChild(MatSort) sort!: MatSort;
  @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
@@ -115,7 +118,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openAddPlayerDialog() {
-    const dialogRef = this.addPlayerDialog.open(AddPlayerDialogComponent );
+    const dialogRef = this.matDialog.open(AddPlayerDialogComponent );
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
@@ -126,13 +129,24 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openDeleteDialog(player: Player): void {
-    const dialogRef = this.confirmDialog.open(ConfirmDialogComponent);
+    const dialogRef = this.matDialog.open(ConfirmDialogComponent);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.removePlayer(player);
       }
     })
+  }
+
+  openStartPlayerDialog(): void {
+    const dialogRef = this.matDialog.open(SelectStartplayerDialogComponent, {
+      data: this.gameService.getAllPlayer()});
+
+    dialogRef.afterClosed().subscribe((selectedPlayer: Player | undefined) => {
+      if (selectedPlayer) {
+        this.gameService.setStartPlayer(selectedPlayer);
+      }
+    });
   }
 
   removePlayer(player: Player): void {
@@ -151,8 +165,13 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   newGame(): void {
+    this.tempScores.set(new Map());
+    this.roundInputs.forEach(input => {
+      input.nativeElement.value = '';
+    });
     this.gameService.newGame();
     this.dataSource.data = this.gameService.getAllPlayer();
+    this.openStartPlayerDialog();
   }
 
   newRound(): void {
@@ -164,12 +183,16 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.tempScores.set(new Map());
-
     this.dataSource.data = this.gameService.getAllPlayer();
+    this.gameService.nextPlayerTurn();
 
     this.roundInputs.forEach(input => {
       input.nativeElement.value = '';
     })
+  }
+
+  isCurrentPlayer(position: number): boolean {
+    return position === this.currentPlayerTurn();
   }
 
   private hasAllPlayersRoundScore(): boolean {
