@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, inject, model, viewChild} from '@angular/core';
+import { Component, inject, model} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,

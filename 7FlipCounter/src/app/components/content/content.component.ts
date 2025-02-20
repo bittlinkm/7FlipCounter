@@ -1,14 +1,13 @@
 import {
   AfterViewInit,
-  Component, computed,
-  effect, ElementRef,
+  Component,
+  ElementRef,
   inject,
   linkedSignal,
-  model,
   OnDestroy,
   OnInit, QueryList, signal,
   ViewChild,
-  viewChild, ViewChildren
+  ViewChildren
 } from '@angular/core';
 import {GameService} from '../../services/game.service';
 import {Player} from '../../models/player';
@@ -24,15 +23,13 @@ import {
 import {SelectionModel} from '@angular/cdk/collections';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPlayerDialogComponent} from '../add-player-dialog/add-player-dialog.component';
-import {MatButton, MatFabButton, MatIconButton} from '@angular/material/button';
+import {MatButton, MatIconButton} from '@angular/material/button';
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {MatIcon} from '@angular/material/icon';
 import {ConfirmDialogComponent} from '../confirm-dialog/confirm-dialog.component';
-import {MatProgressSpinner, ProgressSpinnerMode} from '@angular/material/progress-spinner';
-import {TextInputComponent} from '../lib/text-input/text-input.component';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatSort, MatSortHeader, Sort} from '@angular/material/sort';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
-import {DisplayPlayerComponent} from '../display-player/display-player.component';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {FormsModule} from '@angular/forms';
 import {SelectStartplayerDialogComponent} from '../select-startplayer-dialog/select-startplayer-dialog.component';

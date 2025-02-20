@@ -16,5 +16,4 @@ import {ContentComponent} from '../content/content.component';
   standalone: true
 })
 export class ConfirmDialogComponent {
-  readonly dialogRef = inject(MatDialogRef<ContentComponent>);
 }
