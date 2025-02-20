@@ -192,7 +192,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isCurrentPlayer(position: number): boolean {
-    return position === this.currentPlayerTurn();
+    return this.gameService.isGameStarted() && position === this.currentPlayerTurn();
   }
 
   private hasAllPlayersRoundScore(): boolean {

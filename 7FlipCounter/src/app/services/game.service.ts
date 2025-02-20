@@ -9,7 +9,7 @@ export class GameService {
   private players: Player[] = [];
   private gameStarted = signal<boolean>(false);
   private startPlayer = signal<Player | undefined >(undefined);
-  private currentPlayerTurn = signal<number>(1);
+  private currentPlayerTurn = signal<number>(0);
 
   setStartPlayer(player: Player): void {
     this.startPlayer.set(player);
@@ -84,6 +84,9 @@ export class GameService {
     });
     this.saveAllPlayerToStorage();
     this.gameStarted.set(true);
+    if (this.currentPlayerTurn() === 0) {
+      this.currentPlayerTurn.set(1);
+    }
   }
 
   deletePlayerFromStorage(position: number): void {
