@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, inject, model, viewChild} from '@angular/core';
+import { Component, inject, model} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -14,7 +14,7 @@ import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 
 @Component({
-  selector: 'app-add-player-addPlayerDialog',
+  selector: 'app-add-player-matDialog',
   imports: [
     MatDialogClose,
     MatDialogActions,

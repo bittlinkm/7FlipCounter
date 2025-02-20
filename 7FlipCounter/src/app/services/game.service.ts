@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable, Signal, signal} from '@angular/core';
 import {Player} from '../models/player';
 
 @Injectable({
@@ -7,9 +7,34 @@ import {Player} from '../models/player';
 export class GameService {
   private readonly STORAGE_KEY = 'players';
   private players: Player[] = [];
+  private gameStarted = signal<boolean>(false);
+  private startPlayer = signal<Player | undefined >(undefined);
+  private currentPlayerTurn = signal<number>(0);
+
+  setStartPlayer(player: Player): void {
+    this.startPlayer.set(player);
+    this.currentPlayerTurn.set(player.position);
+  }
 
   getAllPlayer(): Player[] {
     return this.players;
+  }
+
+  getStartPlayer(): Signal<Player | undefined> {
+    return this.startPlayer.asReadonly()
+  }
+
+  getCurrentPlayerTurn(): Signal<number> {
+    return this.currentPlayerTurn.asReadonly();
+  }
+
+  nextPlayerTurn(): void {
+    const nextPosition = this.currentPlayerTurn() >= this.players.length ? 1 : this.currentPlayerTurn() + 1;
+    this.currentPlayerTurn.set(nextPosition);
+  }
+
+  isGameStarted(): Signal<boolean> {
+    return this.gameStarted.asReadonly();
   }
 
   getPlayer(playerId: string): Player {
@@ -58,6 +83,10 @@ export class GameService {
       player.score = player.score.map(()=> 0);
     });
     this.saveAllPlayerToStorage();
+    this.gameStarted.set(true);
+    if (this.currentPlayerTurn() === 0) {
+      this.currentPlayerTurn.set(1);
+    }
   }
 
   deletePlayerFromStorage(position: number): void {
