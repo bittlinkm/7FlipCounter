@@ -55,7 +55,7 @@
               ],
               "outputHashing": "all",
               "serviceWorker": "ngsw-config.json",
-              "baseHref": "/7-flip-counter/"
+              "baseHref": "/7FlipCounter/"
             },
             "development": {
               "optimization": false,
