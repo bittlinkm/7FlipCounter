@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {ContentComponent} from './components/content/content.component';
+import {UpdateService} from './services/update.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,5 @@ import {ContentComponent} from './components/content/content.component';
 })
 export class AppComponent {
   title = '7FlipCounter';
+  readonly updateService = inject(UpdateService)
 }
