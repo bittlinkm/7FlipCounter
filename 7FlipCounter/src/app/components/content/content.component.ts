@@ -34,6 +34,7 @@ import {MatCheckbox} from '@angular/material/checkbox';
 import {FormsModule} from '@angular/forms';
 import {SelectStartplayerDialogComponent} from '../select-startplayer-dialog/select-startplayer-dialog.component';
 import {NgClass} from '@angular/common';
+import {firstValueFrom, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-content',
@@ -79,6 +80,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.editPlayersCheckBox.set(false);
+    this.dataSource.data = this.gameService.getAllPlayer();
 
     this.dataSource.sortingDataAccessor = (player, property) => {
       switch (property) {
@@ -135,15 +137,12 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   }
 
-  openStartPlayerDialog(): void {
+  async openStartPlayerDialog(): Promise<Player | undefined> {
     const dialogRef = this.matDialog.open(SelectStartplayerDialogComponent, {
-      data: this.gameService.getAllPlayer()});
-
-    dialogRef.afterClosed().subscribe((selectedPlayer: Player | undefined) => {
-      if (selectedPlayer) {
-        this.gameService.setStartPlayer(selectedPlayer);
-      }
+      data: this.gameService.getAllPlayer()
     });
+
+    return await firstValueFrom(dialogRef.afterClosed());
   }
 
   removePlayer(player: Player): void {
@@ -161,14 +160,18 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.gameService.deletePlayerFromStorage(player.position);
   }
 
-  newGame(): void {
+  async newGame(): Promise<void> {
     this.tempScores.set(new Map());
     this.roundInputs.forEach(input => {
       input.nativeElement.value = '';
     });
-    this.gameService.newGame();
+
+    const selectedPlayer = await this.openStartPlayerDialog()
+
+    if(selectedPlayer){
+      this.gameService.newGame(selectedPlayer);
+    }
     this.dataSource.data = this.gameService.getAllPlayer();
-    this.openStartPlayerDialog();
   }
 
   newRound(): void {

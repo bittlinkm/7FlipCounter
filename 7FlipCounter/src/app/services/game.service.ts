@@ -1,40 +1,28 @@
-import {Injectable, Signal, signal} from '@angular/core';
+import {Injectable, OnInit, Signal, signal} from '@angular/core';
 import {Player} from '../models/player';
 
 @Injectable({
   providedIn: 'root'
 })
-export class GameService {
-  private readonly STORAGE_KEY = 'players';
+export class GameService implements OnInit{
+  private readonly STORAGE_KEY_PLAYERS = 'players';
+  private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
+  private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
+  private readonly STORAGE_KEY_CURRPLAYERTURN = 'currplayerturn';
   private players: Player[] = [];
   private gameStarted = signal<boolean>(false);
   private startPlayer = signal<Player | undefined >(undefined);
   private currentPlayerTurn = signal<number>(0);
 
-  setStartPlayer(player: Player): void {
-    this.startPlayer.set(player);
-    this.currentPlayerTurn.set(player.position);
+  ngOnInit(): void {
+    this.loadAllPlayerFromStorage();
+    this.loadGameStarted();
+    this.loadStartPlayer();
+    this.loadCurrentPlayerTurn();
   }
 
   getAllPlayer(): Player[] {
     return this.players;
-  }
-
-  getStartPlayer(): Signal<Player | undefined> {
-    return this.startPlayer.asReadonly()
-  }
-
-  getCurrentPlayerTurn(): Signal<number> {
-    return this.currentPlayerTurn.asReadonly();
-  }
-
-  nextPlayerTurn(): void {
-    const nextPosition = this.currentPlayerTurn() >= this.players.length ? 1 : this.currentPlayerTurn() + 1;
-    this.currentPlayerTurn.set(nextPosition);
-  }
-
-  isGameStarted(): Signal<boolean> {
-    return this.gameStarted.asReadonly();
   }
 
   getPlayer(playerId: string): Player {
@@ -43,6 +31,49 @@ export class GameService {
       throw new Error(`Player with id ${playerId} not found in local storage.`);
     }
     return currentPlayer;
+  }
+
+  getCurrentPlayerTurn(): Signal<number> {
+    return this.currentPlayerTurn.asReadonly();
+  }
+
+  getPlayerScore(playerId: string): number {
+    const currentPlayer = this.getPlayer(playerId);
+    return  currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
+  }
+
+  isGameStarted(): Signal<boolean> {
+    return this.gameStarted.asReadonly();
+  }
+
+  setStartPlayer(player: Player): void {
+    this.startPlayer.set(player);
+    localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this.startPlayer()));
+  }
+
+  setCurrentPlayerTurn(nextPosition: number): void {
+    this.currentPlayerTurn.set(nextPosition);
+    localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this.currentPlayerTurn()));
+  }
+
+  nextPlayerTurn(): void {
+    const nextPosition = this.currentPlayerTurn() >= this.players.length ? 1 : this.currentPlayerTurn() + 1;
+    this.setCurrentPlayerTurn(nextPosition)
+  }
+
+  newGame(selectedPlayer: Player): void {
+    this.players.forEach((player: Player): void => {
+      player.score = player.score.map(()=> 0);
+    });
+    this.saveAllPlayerToStorage();
+    this.setGameStated(true)
+
+    this.setStartPlayer(selectedPlayer);
+    this.setCurrentPlayerTurn(selectedPlayer.position);
+
+    if (this.currentPlayerTurn() === 0) {
+      this.currentPlayerTurn.set(1);
+    }
   }
 
   createPlayer(name: string): void{
@@ -58,35 +89,15 @@ export class GameService {
     this.saveAllPlayerToStorage();
   }
 
-  saveAllPlayerToStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.players));
-  }
-
-  getAllPlayerFromStorage(): void {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
-    this.players = saved ? JSON.parse(saved) : [];
-  }
-
-  getPlayerScore(playerId: string): number {
-    const currentPlayer = this.getPlayer(playerId);
-    return  currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
-  }
-
   updatePlayerScore(playerId: string, roundScore: number): void {
     const currentPlayer = this.getPlayer(playerId);
     currentPlayer.score.push(roundScore);
-    this.saveAllPlayerToStorage();
-  }
 
-  newGame(): void {
-    this.players.forEach((player: Player): void => {
-      player.score = player.score.map(()=> 0);
-    });
-    this.saveAllPlayerToStorage();
-    this.gameStarted.set(true);
-    if (this.currentPlayerTurn() === 0) {
-      this.currentPlayerTurn.set(1);
+    const playerIndex = this.players.findIndex(player => player.id === playerId);
+    if (playerIndex > -1) {
+      this.players[playerIndex] = currentPlayer;
     }
+    this.saveAllPlayerToStorage();
   }
 
   deletePlayerFromStorage(position: number): void {
@@ -95,7 +106,36 @@ export class GameService {
   }
 
   clearLocalStorage(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.STORAGE_KEY_PLAYERS);
+  }
+
+  private setGameStated(started: boolean): void {
+    this.gameStarted.set(started);
+    localStorage.setItem(this.STORAGE_KEY_GAMESTARTED, JSON.stringify(this.gameStarted()));
+  }
+
+  private loadAllPlayerFromStorage(): void {
+    const saved = localStorage.getItem(this.STORAGE_KEY_PLAYERS);
+    this.players = saved ? JSON.parse(saved) : [];
+  }
+
+  private loadStartPlayer(): void {
+    const load = localStorage.getItem(this.STORAGE_KEY_STARTPLAYER);
+    this.startPlayer.set(load ? JSON.parse(load) : undefined);
+  }
+
+  private loadCurrentPlayerTurn(): void {
+    const load = localStorage.getItem(this.STORAGE_KEY_CURRPLAYERTURN);
+    this.currentPlayerTurn.set(load ? JSON.parse(load) : 0);
+  }
+
+  private loadGameStarted(): void {
+    const load = localStorage.getItem(this.STORAGE_KEY_GAMESTARTED);
+    this.gameStarted.set(load ? JSON.parse(load) : false);
+  }
+
+  private saveAllPlayerToStorage(): void {
+    localStorage.setItem(this.STORAGE_KEY_PLAYERS, JSON.stringify(this.players));
   }
 
   private generateUniqueId(): string {
