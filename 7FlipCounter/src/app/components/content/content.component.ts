@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   inject,
   linkedSignal,
@@ -58,14 +59,20 @@ import {firstValueFrom, Observable} from 'rxjs';
 })
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
  readonly gameService = inject(GameService);
- readonly matDialog = inject(MatDialog);
- readonly editPlayersCheckBox = signal<boolean>(false);
  private _liveAnnouncer = inject(LiveAnnouncer);
+ readonly matDialog = inject(MatDialog);
  protected dataSource = new MatTableDataSource<Player>([]);
  protected selection = new SelectionModel<Player>(false, []);
+ readonly editPlayersCheckBox = signal<boolean>(false);
  readonly tempScores = signal<Map<string, number>>(new Map());
  protected readonly isGameStarted = this.gameService.isGameStarted()
  protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
+  isNextRoundValid = computed(() => {
+    const isStarted = this.gameService.isGameStarted();
+    const isNotFinished = this.gameService.isGameFinished().length === 0;
+    return isStarted() && isNotFinished;
+  });
+
  @ViewChild('table', {static: true}) table!: MatTable<Player>;
  @ViewChild(MatSort) sort!: MatSort;
  @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
@@ -189,6 +196,17 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.roundInputs.forEach(input => {
       input.nativeElement.value = '';
     })
+    this.checkEndGame();
+  }
+
+  checkEndGame(): void {
+    if (this.gameService.isGameStarted()) {
+      const gameFinished = this.gameService.isGameFinished();
+      if (Array.isArray(gameFinished) && gameFinished.length) {
+        const winnersString = gameFinished.map(winner => winner.name).join(', ');
+        alert(`Spiel beendet. Gewinner: ${winnersString}`);
+      }
+    }
   }
 
   isCurrentPlayer(position: number): boolean {

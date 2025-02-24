@@ -9,6 +9,7 @@ export class GameService implements OnInit{
   private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
   private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
   private readonly STORAGE_KEY_CURRPLAYERTURN = 'currplayerturn';
+  private readonly goalScore : number = 200;
   private players: Player[] = [];
   private gameStarted = signal<boolean>(false);
   private startPlayer = signal<Player | undefined >(undefined);
@@ -44,6 +45,12 @@ export class GameService implements OnInit{
 
   isGameStarted(): Signal<boolean> {
     return this.gameStarted.asReadonly();
+  }
+
+  isGameFinished(): Player[] {
+    return this.players.filter(
+      (player: Player) => this.getPlayerScore(player.id) >= this.goalScore
+    );
   }
 
   setStartPlayer(player: Player): void {
