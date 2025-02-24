@@ -1,24 +1,23 @@
 <main>
-  <h2 mat-dialog-title>Startspieler wählen</h2>
-  <mat-dialog-content>
-    @if(players().length > 0) {
-      <div class="radio-group">
-        <h3>Wähle den Startspieler</h3>
-        <mat-radio-group [(ngModel)]="selectedPlayer">
-          @for(player of players(); track player.id) {
-            <mat-radio-button [value]="player" class="radio-button">
-              {{ player.name }}
-            </mat-radio-button>
-          }
-        </mat-radio-group>
-      </div>
-    } @else {
-      <div>
-        <p>Keine Spieler verfügbar.</p>
-      </div>
-    }
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
+  <h2>Startspieler wählen</h2>
+
+  @if(players().length > 0) {
+    <h3>Wähle den Startspieler</h3>
+    <div class="radio-group">
+      <mat-radio-group [(ngModel)]="selectedPlayer">
+        @for(player of players(); track player.id) {
+          <mat-radio-button [value]="player" class="radio-button">
+            {{ player.name }}
+          </mat-radio-button>
+        }
+      </mat-radio-group>
+    </div>
+  } @else {
+    <div>
+      <p>Keine Spieler verfügbar.</p>
+    </div>
+  }
+  <div class="action-buttons">
     <button mat-button (click)="onCancelClick()">Abbrechen</button>
     <button
       mat-button
@@ -28,6 +27,6 @@
       cdkFocusInitial>
       Spiel starten
     </button>
-  </mat-dialog-actions>
+  </div>
 </main>
 

@@ -3,13 +3,9 @@ import {Player} from '../../models/player';
 import {FormsModule} from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
-  MatDialogActions,
   MatDialogClose,
-  MatDialogContent,
-  MatDialogRef, MatDialogTitle
+  MatDialogRef,
 } from '@angular/material/dialog';
-import {MatFormField, MatLabel} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {ContentComponent} from '../content/content.component';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
@@ -18,13 +14,10 @@ import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
   selector: 'app-select-startplayer-dialog',
   imports: [
     FormsModule,
-    MatDialogContent,
-    MatDialogActions,
     MatButton,
     MatDialogClose,
     MatRadioGroup,
-    MatRadioButton,
-    MatDialogTitle
+    MatRadioButton
   ],
   templateUrl: './select-startplayer-dialog.component.html',
   styleUrl: './select-startplayer-dialog.component.scss',
