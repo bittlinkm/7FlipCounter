@@ -72,9 +72,9 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   linkedDisplayedColumns = linkedSignal(() => {
     if (this.editPlayersCheckBox()) {
-      return ['delete','order', 'position', 'name', 'score', 'round'];
+      return ['delete','order', 'position', 'name', 'score', 'roundInput'];
     } else {
-      return ['position','name', 'score', 'round'];
+      return ['position','name', 'score', 'roundInput'];
     }
   });
 
