@@ -1,14 +1,29 @@
 main {
-  width: 300px;
-  height: 250px;
+  width: 350px;
+  min-height: 300px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
 }
 
 .radio-group {
+  width: 50%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1rem;
+  margin: 1rem 0;
 }
 
 .radio-button {
-  margin: 0.5rem 0;
+  margin: 0.5rem 1rem;
+}
+
+.action-burrons {
+  display: flex;
+  flex-direction: row;
 }
