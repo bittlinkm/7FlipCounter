@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   Component,
-  computed,
   ElementRef,
   inject,
   linkedSignal,
@@ -67,12 +66,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
  readonly tempScores = signal<Map<string, number>>(new Map());
  protected readonly isGameStarted = this.gameService.isGameStarted()
  protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
-  isNextRoundValid = computed(() => {
-    const isStarted = this.gameService.isGameStarted();
-    const isNotFinished = this.gameService.isGameFinished().length === 0;
-    return isStarted() && isNotFinished;
-  });
-
+ isNextRoundValid = signal<boolean>(false);
  @ViewChild('table', {static: true}) table!: MatTable<Player>;
  @ViewChild(MatSort) sort!: MatSort;
  @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
@@ -179,12 +173,19 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       this.gameService.newGame(selectedPlayer);
     }
     this.dataSource.data = this.gameService.getAllPlayer();
+    this.isNextRoundValid.set(true);
+  }
+
+  onNewRoundClick(): void {
+    const missingRoundInput = this.hasAllPlayersRoundInput();
+    if(missingRoundInput) {
+      alert(`Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`);
+    } else {
+      this.newRound();
+    }
   }
 
   newRound(): void {
-   if (!this.hasAllPlayersRoundScore()) {
-     return
-   }
     this.tempScores().forEach((score, playerId) => {
       this.gameService.updatePlayerScore(playerId, score);
     });
@@ -205,6 +206,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       if (Array.isArray(gameFinished) && gameFinished.length) {
         const winnersString = gameFinished.map(winner => winner.name).join(', ');
         alert(`Spiel beendet. Gewinner: ${winnersString}`);
+        this.isNextRoundValid.set(false);
       }
     }
   }
@@ -213,21 +215,24 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.gameService.isGameStarted() && position === this.currentPlayerTurn();
   }
 
-  private hasAllPlayersRoundScore(): boolean {
-    const playersWithoutScore: string[] = [];
+  private hasAllPlayersRoundInput(): boolean {
+    const playersWithoutRoundInput = this.getPlayersWithoutRoundInput();
+    return !!playersWithoutRoundInput;
+  }
+
+  private getPlayersWithoutRoundInput(): string | false{
+    const playersWithoutRoundInput: string[] = [];
 
     this.dataSource.data.forEach(player => {
       if(!this.tempScores().has(player.id)) {
-        playersWithoutScore.push(player.name);
+        playersWithoutRoundInput.push(player.name);
       }
     });
 
-    if (playersWithoutScore.length > 0) {
-      const missingScores = playersWithoutScore.join(', ');
-      alert(`Folgende Spieler haben keine Punkte eingegeben: ${missingScores}`);
-      return false;
+    if (playersWithoutRoundInput.length > 0) {
+      return  playersWithoutRoundInput.join(', ');
     }
-    return true;
+    return false;
   }
 
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
