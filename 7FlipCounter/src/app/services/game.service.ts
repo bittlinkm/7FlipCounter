@@ -43,16 +43,6 @@ export class GameService implements OnInit{
     return  currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
   }
 
-  isGameStarted(): Signal<boolean> {
-    return this.gameStarted.asReadonly();
-  }
-
-  isGameFinished(): Player[] {
-    return this.players.filter(
-      (player: Player) => this.getPlayerScore(player.id) >= this.goalScore
-    );
-  }
-
   setStartPlayer(player: Player): void {
     this.startPlayer.set(player);
     localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this.startPlayer()));
@@ -61,6 +51,15 @@ export class GameService implements OnInit{
   setCurrentPlayerTurn(nextPosition: number): void {
     this.currentPlayerTurn.set(nextPosition);
     localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this.currentPlayerTurn()));
+  }
+
+  isGameStarted(): Signal<boolean> {
+    return this.gameStarted.asReadonly();
+  }
+
+  isGameFinished(): Player[] {
+    return this.players.filter(
+      (player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
   }
 
   nextPlayerTurn(): void {
