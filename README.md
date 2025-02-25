@@ -2,9 +2,8 @@
 
 
 
-- History anstatt nächste Runde
-- Wenn ein Spieler 200 erreicht hat kann nicht mehr weiter gespielt werden.
-    Button sollte ausgegraut sein.
+- History  - eventuell Anstatt nächste Runde Button
+nächste Runde Buttonm nach unten, unter den letzten Spieler.
 - ng serve --configuration production
 - http://localhost:4200/7FlipCounter
 
