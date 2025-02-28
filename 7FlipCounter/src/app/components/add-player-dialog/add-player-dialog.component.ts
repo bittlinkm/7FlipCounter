@@ -1,4 +1,4 @@
-import { Component, inject, model} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, model, OnInit, ViewChild} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -29,12 +29,25 @@ import {MatButton} from '@angular/material/button';
   styleUrl: './add-player-dialog.component.scss',
   standalone: true
 })
-export class AddPlayerDialogComponent {
+export class AddPlayerDialogComponent implements AfterViewInit{
   readonly dialogRef = inject(MatDialogRef<ContentComponent>);
   readonly data = inject<Player>(MAT_DIALOG_DATA);
   readonly name = model();
+  @ViewChild('nameInput') nameInput!: ElementRef;
 
   onCancelClick(): void {
     this.dialogRef.close();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.nameInput.nativeElement.focus();
+    }, 300);
+
+    const inputElement = this.nameInput.nativeElement;
+
+    inputElement.addEventListener('touchstart', function() {
+      inputElement.focus();
+    });
   }
 }
