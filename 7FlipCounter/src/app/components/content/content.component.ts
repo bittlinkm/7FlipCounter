@@ -118,12 +118,21 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openAddPlayerDialog() {
-    const dialogRef = this.matDialog.open(AddPlayerDialogComponent );
+    const dialogRef = this.matDialog.open(AddPlayerDialogComponent);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
-        this.gameService.createPlayer(result);
-        this.dataSource.data = this.gameService.getAllPlayer()
+
+        if (Array.isArray(result)) {
+
+          result.forEach(playerName => {
+            this.gameService.createPlayer(playerName);
+          });
+        } else {
+          this.gameService.createPlayer(result);
+        }
+
+        this.dataSource.data = this.gameService.getAllPlayer();
       }
     });
   }
