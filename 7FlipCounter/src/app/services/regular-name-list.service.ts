@@ -10,8 +10,10 @@ export class RegularNameListService {
   constructor() { }
 
   getRegularNameList(): RegularNameItem[] {
-    return regularNameList;
+    return this.sortListAlphabetical(regularNameList);
   }
 
-  //Todo: Sort List by Name
+  private sortListAlphabetical(unsortedList: RegularNameItem[]): RegularNameItem[] {
+    return unsortedList.sort((a,b) => a.name.localeCompare(b.name));
+  }
 }
