@@ -4,14 +4,14 @@
     <p>Gib einen Namen ein.</p>
     <mat-form-field>
       <mat-label>Name</mat-label>
-      <input #nameInput cdkFocusInitial matInput [(ngModel)]="name" [disabled]="showRegularNames()" />
+      <input #nameInput cdkFocusInitial matInput [(ngModel)]="name" [disabled]="showRegularPlayer()" />
     </mat-form-field>
 
-    <mat-checkbox [(ngModel)]="showRegularNames">Namen aus Liste auswählen</mat-checkbox>
+    <mat-checkbox [(ngModel)]="showRegularPlayer">Namen aus Liste auswählen</mat-checkbox>
 
-    @if(showRegularNames()) {
+    @if(showRegularPlayer()) {
       <div  class="name-list">
-          @for (item of regularNameList(); track item.id){
+          @for (item of regularPlayerList(); track item.id){
             <mat-checkbox [(ngModel)]="item.selected">
               {{ item.name }}
             </mat-checkbox>
@@ -24,7 +24,7 @@
       <button mat-button (click)="onCancelClick()">Abbrechen</button>
       <button mat-button
               [mat-dialog-close]="getSelectedNamesOrInput()"
-              [disabled]="(this.showRegularNames() && this.getSelectedCount() === 0) || (!this.showRegularNames() && !this.name())"
+              [disabled]="(this.showRegularPlayer() && this.getSelectedCount() === 0) || (!this.showRegularPlayer() && !this.name())"
       >Ok</button>
   </mat-dialog-actions>
 </main>

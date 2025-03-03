@@ -13,8 +13,8 @@ import {Player} from '../../models/player';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {RegularNameItem} from '../../models/regularNameItem';
-import {RegularNameListService} from '../../services/regular-name-list.service';
+import {RegularPlayerItem} from '../../models/regularPlayerItem';
+import {RegularPlayerListService} from '../../services/regular-player-list.service';
 
 @Component({
   selector: 'app-add-player-matDialog',
@@ -37,13 +37,13 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
   readonly dialogRef = inject(MatDialogRef<ContentComponent>);
   readonly data = inject<Player>(MAT_DIALOG_DATA);
   readonly name = model<string>();
-  readonly showRegularNames = signal(false);
-  readonly regularNameList = signal<RegularNameItem[]>([]);
-  regularNameListService = inject(RegularNameListService);
+  readonly showRegularPlayer = signal(false);
+  readonly regularPlayerList = signal<RegularPlayerItem[]>([]);
+  regularNameListService = inject(RegularPlayerListService);
   @ViewChild('nameInput') nameInput!: ElementRef;
 
   constructor() {
-    this.regularNameList.set(this.regularNameListService.getRegularNameList());
+    this.regularPlayerList.set(this.regularNameListService.getRegularPlayerList());
   }
 
   onCancelClick(): void {
@@ -51,8 +51,8 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
   }
 
   getSelectedNamesOrInput(): string | string[] {
-    if (this.showRegularNames()) {
-      const selectedNames = this.regularNameList()
+    if (this.showRegularPlayer()) {
+      const selectedNames = this.regularPlayerList()
         .filter(nameItem => nameItem.selected)
         .map(nameItem => nameItem.name);
 
@@ -65,7 +65,7 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
   }
 
   getSelectedCount(): number {
-    return this.regularNameList().filter(nameItem => nameItem.selected).length;
+    return this.regularPlayerList().filter(nameItem => nameItem.selected).length;
   }
 
 
@@ -82,6 +82,6 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.regularNameList().forEach(item => {item.selected = false;});
+    this.regularPlayerList().forEach(item => {item.selected = false;});
   }
 }
