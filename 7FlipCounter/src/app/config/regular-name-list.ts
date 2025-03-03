@@ -1,18 +1,22 @@
 import {RegularNameItem} from '../models/regularNameItem';
 
-export const regularNameList: RegularNameItem[] = [
-  { id: '1', name: 'Günter' },
-  { id: '2', name: 'Sandra' },
-  { id: '3', name: 'Mario' },
-  { id: '4', name: 'Richard' },
-  { id: '5', name: 'Doris' },
-  { id: '6', name: 'Sabrina' },
-  { id: '7', name: 'Sascha' },
-  { id: '8', name: 'Manuela' },
-  { id: '9', name: 'Raphi' },
-  { id: '10', name: 'Petra' },
-  { id: '11', name: 'Oli' },
-  { id: '12', name: 'Anna' },
+ const names: string[] = [
+  'Günter',
+  'Sandra',
+  'Mario',
+  'Richard',
+  'Doris',
+  'Sabrina',
+  'Sascha',
+  'Manuela',
+  'Raphi',
+  'Petra',
+  'Oli',
+  'Anna'
 ];
 
-//TODO: think about the id it is better to delete it.
+export const regularNameList: RegularNameItem[] = names.map((name, index) => ({
+  id: (index + 1).toString(),
+  name,
+  selected: false
+}));

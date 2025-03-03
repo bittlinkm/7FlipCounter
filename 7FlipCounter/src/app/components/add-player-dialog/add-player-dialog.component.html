@@ -1,15 +1,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <main>
-  <mat-dialog-content>
+  <mat-dialog-content class="dialog-content">
     <p>Gib einen Namen ein.</p>
     <mat-form-field>
       <mat-label>Name</mat-label>
       <input #nameInput cdkFocusInitial matInput [(ngModel)]="name" [disabled]="showRegularNames()" />
     </mat-form-field>
 
-    <div class="toggle-button">
-      <mat-checkbox [(ngModel)]="showRegularNames">Namen aus Liste auswählen</mat-checkbox>
-    </div>
+    <mat-checkbox [(ngModel)]="showRegularNames">Namen aus Liste auswählen</mat-checkbox>
 
     @if(showRegularNames()) {
       <div  class="name-list">
@@ -20,11 +18,13 @@
           }
       </div>
     }
-
   </mat-dialog-content>
 
   <mat-dialog-actions>
       <button mat-button (click)="onCancelClick()">Abbrechen</button>
-      <button mat-button [mat-dialog-close]="getSelectedNamesOrInput()">Ok</button>
+      <button mat-button
+              [mat-dialog-close]="getSelectedNamesOrInput()"
+              [disabled]="(this.showRegularNames() && this.getSelectedCount() === 0) || (!this.showRegularNames() && !this.name())"
+      >Ok</button>
   </mat-dialog-actions>
 </main>
