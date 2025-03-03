@@ -1,4 +1,4 @@
-import {RegularNameItem} from '../models/regularNameItem';
+import {RegularPlayerItem} from '../models/regularPlayerItem';
 
  const names: string[] = [
   'Günter',
@@ -15,7 +15,8 @@ import {RegularNameItem} from '../models/regularNameItem';
   'Anna'
 ];
 
-export const regularNameList: RegularNameItem[] = names.map((name, index) => ({
+ //TODO: move to service
+export const regularPlayerList: RegularPlayerItem[] = names.map((name, index) => ({
   id: (index + 1).toString(),
   name,
   selected: false
