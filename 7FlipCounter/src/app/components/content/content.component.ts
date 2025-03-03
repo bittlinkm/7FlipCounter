@@ -249,7 +249,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     const currentIndex = event.currentIndex;
     if(previousIndex !== currentIndex) {
       moveItemInArray(this.dataSource.data, previousIndex, currentIndex);
-      // Update positions after moving
+
       this.dataSource.data.forEach((player, index) => {
         player.position = index + 1;
       });

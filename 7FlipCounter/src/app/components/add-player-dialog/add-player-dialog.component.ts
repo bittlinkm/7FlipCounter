@@ -13,7 +13,6 @@ import {Player} from '../../models/player';
 import {MatInput} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
-import {RegularPlayerItem} from '../../models/regularPlayerItem';
 import {RegularPlayerListService} from '../../services/regular-player-list.service';
 
 @Component({
@@ -38,7 +37,7 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
   readonly data = inject<Player>(MAT_DIALOG_DATA);
   readonly name = model<string>();
   readonly showRegularPlayer = signal(false);
-  readonly regularPlayerList = signal<RegularPlayerItem[]>([]);
+  readonly regularPlayerList = signal<Player[]>([]);
   regularNameListService = inject(RegularPlayerListService);
   @ViewChild('nameInput') nameInput!: ElementRef;
 
