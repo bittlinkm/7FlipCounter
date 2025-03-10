@@ -43,6 +43,28 @@ export class GameService implements OnInit{
     return  currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
   }
 
+  getWinner(): Player[] | Player {
+    const winners = this.players.filter( player => this.getPlayerScore(player.id) >= this.goalScore);
+
+    if (winners.length === 0) {
+      return [];
+    }
+
+    if (winners.length === 1) {
+      return winners[0];
+    }
+
+    let highestScore = 0;
+    for (const player of winners) {
+      const score = this.getPlayerScore(player.id);
+      if (score > highestScore) {
+        highestScore = score;
+      }
+    }
+
+    return  winners.filter(player => this.getPlayerScore(player.id) === highestScore);
+  }
+
   setStartPlayer(player: Player): void {
     this.startPlayer.set(player);
     localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this.startPlayer()));
@@ -57,9 +79,11 @@ export class GameService implements OnInit{
     return this.gameStarted.asReadonly();
   }
 
-  isGameFinished(): Player[] {
-    return this.players.filter(
+  isGameFinished(): boolean {
+    const winner = this.players.filter(
       (player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
+
+    return winner.length > 0
   }
 
   nextPlayerTurn(): void {
