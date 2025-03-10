@@ -211,9 +211,9 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   checkEndGame(): void {
     if (this.gameService.isGameStarted()) {
-      const gameFinished = this.gameService.isGameFinished();
-      if (Array.isArray(gameFinished) && gameFinished.length) {
-        const winnersString = gameFinished.map(winner => winner.name).join(', ');
+      const winner = this.gameService.getWinner();
+      if (Array.isArray(winner) && this.gameService.isGameFinished()) {
+        const winnersString = winner.map(winner => winner.name).join(', ');
         alert(`Spiel beendet. Gewinner: ${winnersString}`);
         this.isNextRoundValid.set(false);
       }

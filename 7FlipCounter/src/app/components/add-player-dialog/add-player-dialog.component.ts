@@ -72,12 +72,6 @@ export class AddPlayerDialogComponent implements AfterViewInit, OnDestroy{
     setTimeout(() => {
       this.nameInput.nativeElement.focus();
     }, 300);
-
-    const inputElement = this.nameInput.nativeElement;
-
-    inputElement.addEventListener('touchstart', function() {
-      inputElement.focus();
-    });
   }
 
   ngOnDestroy(): void {
