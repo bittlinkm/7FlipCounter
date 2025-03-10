@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1741618018708,
+  "timestamp": 1741635863319,
   "index": "/7FlipCounter/index.html",
   "assetGroups": [
     {
@@ -30,6 +30,14 @@
         "ignoreVary": true
       },
       "urls": [
+        "/7FlipCounter/icons/7flip-128x128.png",
+        "/7FlipCounter/icons/7flip-144x144.png",
+        "/7FlipCounter/icons/7flip-152x152.png",
+        "/7FlipCounter/icons/7flip-192x192.png",
+        "/7FlipCounter/icons/7flip-384x384.png",
+        "/7FlipCounter/icons/7flip-512x512.png",
+        "/7FlipCounter/icons/7flip-72x72.png",
+        "/7FlipCounter/icons/7flip-96x96.png",
         "/7FlipCounter/icons/icon-128x128.png",
         "/7FlipCounter/icons/icon-144x144.png",
         "/7FlipCounter/icons/icon-152x152.png",
@@ -46,7 +54,15 @@
   "hashTable": {
     "/7FlipCounter/chunk-35BGQ7TT.js": "9c7e94d2e7fb9deba81e3ab923eb0df068ed19dd",
     "/7FlipCounter/chunk-AH7R3MUY.js": "a3d6167997815319d68c65c2a29c4f682c60c0c2",
-    "/7FlipCounter/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
+    "/7FlipCounter/favicon.ico": "9c26eb837138097e571fb4cebb8ee8263bd4db58",
+    "/7FlipCounter/icons/7flip-128x128.png": "3523987029f8846db44e43d5e1d0c6b55b0dbfa8",
+    "/7FlipCounter/icons/7flip-144x144.png": "de0b291449c072337222ca28a702fba5de79475f",
+    "/7FlipCounter/icons/7flip-152x152.png": "d4d8efdeb4f4767f2c1415f3d4ef14dc1314bf37",
+    "/7FlipCounter/icons/7flip-192x192.png": "71f37cf09072d74fc76cb5d28ee9d4ef240bf04e",
+    "/7FlipCounter/icons/7flip-384x384.png": "e2c56cc391c8417e5cd50b65ef75e7e549bc5ae4",
+    "/7FlipCounter/icons/7flip-512x512.png": "c429ee69843a1a7b8e0836a2c7177e79aa2d6828",
+    "/7FlipCounter/icons/7flip-72x72.png": "b6c4b9505a8634a54be4d3393089e4a4fe3693cf",
+    "/7FlipCounter/icons/7flip-96x96.png": "b01ce73f636e707b01a1c0f4acb8c0757e8db0fb",
     "/7FlipCounter/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
     "/7FlipCounter/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
     "/7FlipCounter/icons/icon-152x152.png": "eae6e0f0c8afb8aaae339e2a569b43e9238e5e6c",
@@ -57,7 +73,7 @@
     "/7FlipCounter/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
     "/7FlipCounter/index.html": "c698db01d97b2fac2cd85602870361fa8d28407e",
     "/7FlipCounter/main-3XB5ULZX.js": "24e85530b992267b20f84a7e9b3b416edee90d12",
-    "/7FlipCounter/manifest.webmanifest": "38e518945087b493138e07f726b2a7e1fbab7cb9",
+    "/7FlipCounter/manifest.webmanifest": "63a179cd7684fc2c2e94163de7914378b81e2bce",
     "/7FlipCounter/polyfills-FFHMD2TL.js": "f49b49a155bc7d192db62a4c15d0a612b460a667",
     "/7FlipCounter/styles-CXQUZ3PB.css": "229ff5309854b28661e28ea5917c9754cc407321"
   },
