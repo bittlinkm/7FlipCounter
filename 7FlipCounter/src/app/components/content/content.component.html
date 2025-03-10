@@ -2,7 +2,6 @@
   <header>
     <button mat-raised-button (click)="openAddPlayerDialog()">Spieler hinzufügen</button>
     <button mat-raised-button (click)="newGame()">Neues Spiel</button>
-    <button mat-raised-button (click)="onNewRoundClick()" [disabled]="!isNextRoundValid()">Nächste Runde</button>
     <mat-checkbox [(ngModel)]="editPlayersCheckBox" (ngModelChange)="editPlayersCheckBox.set($event)">Bearbeiten</mat-checkbox>
   </header>
 
@@ -61,14 +60,17 @@
                          sortActionDescription="Sort by score"
         >Score</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <div class="spinner-container">
-            <mat-progress-spinner
-              diameter="40"
-              mode="determinate"
-              [value]="spinnerValue(element)"
-              [strokeWidth]="3">
-            </mat-progress-spinner>
-          </div>
+          @if (this.defaultCounterMode()){
+            <div class="spinner-container">
+
+              <mat-progress-spinner
+                diameter="40"
+                mode="determinate"
+                [value]="spinnerValue(element)"
+                [strokeWidth]="3">
+              </mat-progress-spinner>
+            </div>
+          }
           <div class="spinner-text">{{counter(element)}}</div>
         </mat-cell>
       </ng-container>
@@ -93,5 +95,13 @@
                (click)="selection.toggle(row)">
       </mat-row>
     </mat-table>
+    <div class="table-end-container">
+      @if (editPlayersCheckBox()){
+        <button mat-raised-button (click)="onToggleCounterMode()">
+          {{ this.gameService.isDefaultCounterMode() ? 'Normaler Zähler' : '7 Flip'}}
+        </button>
+      }
+      <button mat-raised-button (click)="onNewRoundClick()" [disabled]="!isNextRoundValid()">Nächste Runde</button>
+    </div>
   </section>
 </main>

@@ -1,5 +1,5 @@
 import {
-  AfterViewInit,
+  AfterViewInit, ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
@@ -66,6 +66,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
  readonly tempScores = signal<Map<string, number>>(new Map());
  protected readonly isGameStarted = this.gameService.isGameStarted()
  protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
+ protected defaultCounterMode = signal<boolean>(true);
  isNextRoundValid = signal<boolean>(false);
  @ViewChild('table', {static: true}) table!: MatTable<Player>;
  @ViewChild(MatSort) sort!: MatSort;
@@ -194,6 +195,14 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  onToggleCounterMode(): void{
+    this.defaultCounterMode.set(this.gameService.isDefaultCounterMode());
+    this.defaultCounterMode.set(!this.defaultCounterMode());
+    this.gameService.setDefaultCounterMode(this.defaultCounterMode());
+    this.editPlayersCheckBox.set(false);
+    console.log(this.defaultCounterMode());
+  }
+
   newRound(): void {
     this.tempScores().forEach((score, playerId) => {
       this.gameService.updatePlayerScore(playerId, score);
@@ -206,7 +215,10 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.roundInputs.forEach(input => {
       input.nativeElement.value = '';
     })
-    this.checkEndGame();
+    console.log('checkEndGame' + this.defaultCounterMode())
+    if(this.defaultCounterMode()){
+      this.checkEndGame();
+    }
   }
 
   checkEndGame(): void {

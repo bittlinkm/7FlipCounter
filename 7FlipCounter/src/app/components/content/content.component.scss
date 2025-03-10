@@ -22,6 +22,16 @@ main {
   max-width: 900px;
   margin: 0 auto;
   overflow: auto;
+
+  .table-end-container {
+    display: flex;
+    justify-content: end;
+
+    button {
+      margin-top: 2em;
+      margin-right: 8em;
+    }
+  }
 }
 
 .mat-table {
