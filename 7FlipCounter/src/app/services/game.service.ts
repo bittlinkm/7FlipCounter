@@ -9,8 +9,10 @@ export class GameService implements OnInit{
   private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
   private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
   private readonly STORAGE_KEY_CURRPLAYERTURN = 'currplayerturn';
+  private readonly STORAGE_KEY_DEFAULTCOUNTERMODE = 'defaultcountermode'
   private readonly goalScore : number = 200;
   private players: Player[] = [];
+  private defaultCounterMode = signal<boolean>(true);
   private gameStarted = signal<boolean>(false);
   private startPlayer = signal<Player | undefined >(undefined);
   private currentPlayerTurn = signal<number>(0);
@@ -20,6 +22,7 @@ export class GameService implements OnInit{
     this.loadGameStarted();
     this.loadStartPlayer();
     this.loadCurrentPlayerTurn();
+    this.loadDefaultCounterMode();
   }
 
   getAllPlayer(): Player[] {
@@ -80,10 +83,17 @@ export class GameService implements OnInit{
   }
 
   isGameFinished(): boolean {
-    const winner = this.players.filter(
-      (player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
+    if(this.isDefaultCounterMode()){
+      const winner = this.players.filter(
+        (player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
 
-    return winner.length > 0
+      return winner.length > 0
+    }
+    return false
+  }
+
+  isDefaultCounterMode(): boolean {
+    return this.defaultCounterMode();
   }
 
   nextPlayerTurn(): void {
@@ -135,6 +145,11 @@ export class GameService implements OnInit{
     this.saveAllPlayerToStorage();
   }
 
+  setDefaultCounterMode(defaultCounterMode: boolean) {
+    this.defaultCounterMode.set(defaultCounterMode);
+    localStorage.setItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE,JSON.stringify(this.defaultCounterMode()));
+  }
+
   clearLocalStorage(): void {
     localStorage.removeItem(this.STORAGE_KEY_PLAYERS);
   }
@@ -162,6 +177,11 @@ export class GameService implements OnInit{
   private loadGameStarted(): void {
     const load = localStorage.getItem(this.STORAGE_KEY_GAMESTARTED);
     this.gameStarted.set(load ? JSON.parse(load) : false);
+  }
+
+  private loadDefaultCounterMode(): void {
+    const load = localStorage.getItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE);
+    this.defaultCounterMode.set(load ? JSON.parse(load) : false);
   }
 
   private saveAllPlayerToStorage(): void {
