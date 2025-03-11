@@ -200,7 +200,6 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.defaultCounterMode.set(!this.defaultCounterMode());
     this.gameService.setDefaultCounterMode(this.defaultCounterMode());
     this.editPlayersCheckBox.set(false);
-    console.log(this.defaultCounterMode());
   }
 
   newRound(): void {
@@ -215,20 +214,27 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.roundInputs.forEach(input => {
       input.nativeElement.value = '';
     })
-    console.log('checkEndGame' + this.defaultCounterMode())
     if(this.defaultCounterMode()){
       this.checkEndGame();
     }
   }
 
   checkEndGame(): void {
-    if (this.gameService.isGameStarted()) {
+    if (this.gameService.isGameStarted() && this.gameService.isGameFinished()) {
       const winner = this.gameService.getWinner();
-      if (Array.isArray(winner) && this.gameService.isGameFinished()) {
-        const winnersString = winner.map(winner => winner.name).join(', ');
-        alert(`Spiel beendet. Gewinner: ${winnersString}`);
-        this.isNextRoundValid.set(false);
+      let winnerMessage: string = 'Spiel beendet. Gewinner: ';
+
+      if(Array.isArray(winner)) {
+        const winnerString = winner.map(winner => winner.name).join(', ');
+        winnerMessage += winnerString;
+      } else if(winner) {
+        winnerMessage += winner.name;
+      } else {
+        winnerMessage = 'Spiel beendet. Kein Gewinner';
       }
+
+      alert(winnerMessage);
+      this.isNextRoundValid.set(false);
     }
   }
 
