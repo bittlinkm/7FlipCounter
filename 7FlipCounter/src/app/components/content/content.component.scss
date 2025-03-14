@@ -1,4 +1,5 @@
 main {
+  max-width: 600px;
   width: 95%;
   height: 100%;
   margin: 10px auto;
@@ -9,10 +10,19 @@ main {
     align-items: center;
     width: 100%;
     height: 10%;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .header > * {
     margin-top: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  header {
+    height: auto;
+    padding: 8px 0;
   }
 }
 
@@ -25,11 +35,10 @@ main {
 
   .table-end-container {
     display: flex;
-    justify-content: end;
+    justify-content: space-around;
 
     button {
       margin-top: 2em;
-      margin-right: 8em;
     }
   }
 }
@@ -130,6 +139,8 @@ main {
   min-width: 80px;
   max-width: 150px;
   padding: 0;
+  position: relative;
+  overflow: hidden;
 
   .spinner-container {
     justify-content: center;
@@ -146,6 +157,7 @@ main {
     font-size: 0.8rem;
     font-weight: bold;
     color: #333;
+    pointer-events: none;
   }
 }
 
