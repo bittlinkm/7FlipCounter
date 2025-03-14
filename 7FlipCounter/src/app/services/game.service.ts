@@ -140,9 +140,29 @@ export class GameService implements OnInit{
     this.saveAllPlayerToStorage();
   }
 
-  deletePlayerFromStorage(position: number): void {
-    this.players.splice(position, 1);
+  deletePlayer(player: Player) {
+    const index = this.players.indexOf(player);
+    if(index <= -1) {
+      console.log('Spieler konnte nicht gelöscht werden. Index zu klein!')
+      return;
+    }
+
+    const data = this.players;
+    data.splice(index, 1);
+    this.players = [...data];
+
+    this.players.forEach((item,index): void => {
+      item.position = index + 1;
+    })
+
+    this.updatePlayerPosition();
     this.saveAllPlayerToStorage();
+  }
+
+  updatePlayerPosition(): void{
+    this.players.forEach((item,index): void => {
+      item.position = index + 1;
+    })
   }
 
   setDefaultCounterMode(defaultCounterMode: boolean) {
