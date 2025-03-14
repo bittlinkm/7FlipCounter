@@ -157,18 +157,8 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   removePlayer(player: Player): void {
-    const index = this.dataSource.data.indexOf(player);
-    if (index > -1) {
-      const data = this.dataSource.data;
-      data.splice(index, 1);
-      this.dataSource.data = [...data];
-
-      this.dataSource.data.forEach((item, index) => {
-        item.position = index + 1;
-      });
-    }
-
-    this.gameService.deletePlayerFromStorage(player.position);
+    this.gameService.deletePlayer(player);
+    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
   async newGame(): Promise<void> {
