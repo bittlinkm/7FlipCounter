@@ -1,7 +1,7 @@
 <main>
   <mat-dialog-content class="dialog-content">
     <p>Gib einen Namen ein.</p>
-    <mat-form-field>
+    <mat-form-field class="form-field">
       <mat-label>Name</mat-label>
       <input #nameInput cdkFocusInitial matInput [(ngModel)]="name" [disabled]="showRegularPlayer()" />
     </mat-form-field>
@@ -19,7 +19,7 @@
     }
   </mat-dialog-content>
 
-  <mat-dialog-actions>
+  <mat-dialog-actions class="action-container">
       <button mat-button (click)="onCancelClick()">Abbrechen</button>
       <button mat-button
               [mat-dialog-close]="getSelectedNamesOrInput()"

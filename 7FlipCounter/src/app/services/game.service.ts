@@ -165,6 +165,14 @@ export class GameService implements OnInit{
     })
   }
 
+  updatePlayerName(player: Player, newName: string): void {
+    const playerToUpdate = this.players.find(p => p.id === player.id);
+    if(playerToUpdate) {
+      playerToUpdate.name = newName;
+    }
+    this.saveAllPlayerToStorage();
+  }
+
   setDefaultCounterMode(defaultCounterMode: boolean) {
     this.defaultCounterMode.set(defaultCounterMode);
     localStorage.setItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE,JSON.stringify(this.defaultCounterMode()));

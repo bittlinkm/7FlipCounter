@@ -35,6 +35,7 @@ import {FormsModule} from '@angular/forms';
 import {SelectStartplayerDialogComponent} from '../select-startplayer-dialog/select-startplayer-dialog.component';
 import {NgClass} from '@angular/common';
 import {firstValueFrom, Observable} from 'rxjs';
+import {EditPlayerComponent} from '../edit-player/edit-player.component';
 
 @Component({
   selector: 'app-content',
@@ -273,6 +274,25 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     const currentTempScores = new Map(this.tempScores());
     currentTempScores.set(player.id, roundScore);
     this.tempScores.set(currentTempScores);
+  }
+
+  editName(id: string) {
+    if(!this.editPlayersCheckBox()){
+      return;
+    }
+
+    const currPlayer = this.gameService.getPlayer(id);
+    const dialogRef = this.matDialog.open(EditPlayerComponent, {
+      data: {name: currPlayer.name},
+    });
+
+    dialogRef.afterClosed().subscribe( newName => {
+      if(newName){
+        this.gameService.updatePlayerName(currPlayer, newName);
+        console.log(newName);
+      }
+    })
+    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
   ngOnDestroy(): void {
