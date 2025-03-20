@@ -51,7 +51,7 @@
         <mat-header-cell *matHeaderCellDef sticky mat-sort-header
                          sortActionDescription="Sort by name"
         >Name</mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+        <mat-cell (click)="editName(element.id)"  *matCellDef="let element"> {{element.name}} </mat-cell>
       </ng-container>
 
       <!-- Score Column -->
@@ -83,7 +83,7 @@
                  class="round-input"
                  type="number"
                  (keyup)="keyUp(element, $event)"
-                 [disabled]="!isGameStarted()">
+                 [disabled]="!isGameStarted() || !isNextRoundValid()">
         </mat-cell>
       </ng-container>
 
