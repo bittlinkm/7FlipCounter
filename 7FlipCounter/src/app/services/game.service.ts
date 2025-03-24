@@ -1,5 +1,6 @@
 import {Injectable, OnInit, Signal, signal} from '@angular/core';
 import {Player} from '../models/player';
+import {moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Injectable({
   providedIn: 'root'
@@ -169,6 +170,15 @@ export class GameService implements OnInit{
     const playerToUpdate = this.players.find(p => p.id === player.id);
     if(playerToUpdate) {
       playerToUpdate.name = newName;
+    }
+    this.saveAllPlayerToStorage();
+  }
+
+  movePlayerPosition(previousIndex: number, currentIndex: number): void {
+    if(previousIndex !== currentIndex) {
+      moveItemInArray(this.players, previousIndex, currentIndex);
+      this.updatePlayerPosition();
+      this.players = [...this.players];
     }
     this.saveAllPlayerToStorage();
   }

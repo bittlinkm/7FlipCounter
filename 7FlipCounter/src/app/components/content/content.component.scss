@@ -13,17 +13,13 @@ main {
     flex-wrap: wrap;
     gap: 8px;
   }
-
-  .header > * {
-    margin-top: 10px;
-  }
 }
 
 @media (max-width: 380px) {
   header {
-    height: auto;
+    height: 20%;
     padding: 8px 0;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 }
 
