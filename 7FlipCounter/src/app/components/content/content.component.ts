@@ -256,15 +256,8 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
     const previousIndex = this.dataSource.data.findIndex(d => d === event.item.data);
     const currentIndex = event.currentIndex;
-    if(previousIndex !== currentIndex) {
-      moveItemInArray(this.dataSource.data, previousIndex, currentIndex);
-
-      this.dataSource.data.forEach((player, index) => {
-        player.position = index + 1;
-      });
-      this.dataSource.data = [...this.dataSource.data];
-    }
-    this.table.renderRows();
+    this.gameService.movePlayerPosition(previousIndex,currentIndex);
+    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
   keyUp(player: Player, event: KeyboardEvent): void {
