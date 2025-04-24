@@ -13,17 +13,21 @@ main {
     flex-wrap: wrap;
     gap: 8px;
   }
-
-  .header > * {
-    margin-top: 10px;
-  }
 }
 
 @media (max-width: 380px) {
-  header {
-    height: auto;
+  main header {
+    height: 12%;
     padding: 8px 0;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 320px) {
+  main header {
+    height: 15%;
+    padding: 8px 0;
+    margin-bottom: 6px;
   }
 }
 
