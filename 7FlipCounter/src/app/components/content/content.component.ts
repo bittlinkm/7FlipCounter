@@ -1,11 +1,11 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
   inject,
   linkedSignal,
-  model,
   OnDestroy,
   OnInit,
   QueryList,
@@ -32,12 +32,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { AddPlayerDialogComponent } from '../add-player-dialog/add-player-dialog.component';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDragHandle,
-  CdkDropList,
-} from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { MatIcon } from '@angular/material/icon';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -79,6 +74,7 @@ import { StartNewGameDialogComponent } from '../start-new-game-dialog/start-new-
   ],
   templateUrl: './content.component.html',
   styleUrl: './content.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -89,11 +85,11 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   protected selection = new SelectionModel<Player>(false, []);
   readonly editPlayersCheckBox = signal<boolean>(false);
   readonly tempScores = signal<Map<string, number>>(new Map());
-  protected readonly isGameStarted = this.gameService.isGameStarted();
-  protected readonly currentPlayerTurn =
-    this.gameService.getCurrentPlayerTurn();
+  protected readonly isGameStarted = this.gameService.isGameStarted;
+  protected readonly currentPlayerTurn = this.gameService.currentPlayerTurn;
   protected defaultCounterMode = signal<boolean>(true);
   isNextRoundValid = signal<boolean>(false);
+
   @ViewChild('table', { static: true }) table!: MatTable<Player>;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
@@ -141,12 +137,12 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   spinnerValue(player: Player): number {
     const tempScore = this.tempScores().get(player.id) || 0;
-    return (this.gameService.getPlayerScore(player.id) + tempScore) / 2;
+    return (this.gameService.getPlayerScoreById(player.id) + tempScore) / 2;
   }
 
   counter(player: Player): number {
     const tempScore = this.tempScores().get(player.id) || 0;
-    return this.gameService.getPlayerScore(player.id) + tempScore;
+    return this.gameService.getPlayerScoreById(player.id) + tempScore;
   }
 
   openAddPlayerDialog() {
@@ -198,7 +194,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       if (result) {
         this.newGameWithSamePlayers();
       } else if (result === false) {
-        this.gameService.newGame();
+        this.gameService.newEmptyGame();
       } else {
         return;
       }
@@ -209,7 +205,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     const selectedPlayer = await this.openStartPlayerDialog();
 
     if (selectedPlayer) {
-      this.gameService.newGame(selectedPlayer);
+      this.gameService.newGameWithSamePlayers(selectedPlayer);
     }
     this.isNextRoundValid.set(true);
   }
@@ -217,16 +213,14 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   onNextRound(): void {
     const missingRoundInput = this.hasAllPlayersRoundInput();
     if (missingRoundInput) {
-      alert(
-        `Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`,
-      );
+      alert(`Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`);
     } else {
       this.nextRound();
     }
   }
 
   onToggleCounterMode(): void {
-    this.defaultCounterMode.set(this.gameService.isDefaultCounterMode());
+    this.defaultCounterMode.set(this.gameService.is7FlipCounterMode());
     this.defaultCounterMode.set(!this.defaultCounterMode());
     this.gameService.setDefaultCounterMode(this.defaultCounterMode());
     this.editPlayersCheckBox.set(false);
@@ -268,11 +262,6 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isCurrentPlayer(position: number): boolean {
-    const started = this.isGameStarted();
-    const turn = this.currentPlayerTurn();
-    console.log('game stared ' + started);
-    console.log('pos ' + position + ' turn ' + turn);
-
     return this.isGameStarted() && position === this.currentPlayerTurn();
   }
 
@@ -297,9 +286,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
-    const previousIndex = this.dataSource.data.findIndex(
-      (d) => d === event.item.data,
-    );
+    const previousIndex = this.dataSource.data.findIndex((d) => d === event.item.data);
     const currentIndex = event.currentIndex;
     this.gameService.movePlayerPosition(previousIndex, currentIndex);
   }

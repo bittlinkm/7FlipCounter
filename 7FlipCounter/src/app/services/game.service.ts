@@ -1,4 +1,4 @@
-import { Injectable, Signal, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Player } from '../models/player';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -10,26 +10,30 @@ export class GameService {
   private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
   private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
   private readonly STORAGE_KEY_CURRPLAYERTURN = 'currplayerturn';
-  private readonly STORAGE_KEY_DEFAULTCOUNTERMODE = 'defaultcountermode';
+  private readonly STORAGE_KEY_7FLIPCOUNTERMODE = '7flipcountermode';
   private readonly goalScore: number = 200;
+
   private _players = signal<Player[]>([]);
   readonly players = this._players.asReadonly();
-  private defaultCounterMode = signal<boolean>(true);
-  private gameStarted = signal<boolean>(false);
-  private startPlayer = signal<Player | undefined>(undefined);
+
+  private _isGameStarted = signal<boolean>(false);
+  readonly isGameStarted = this._isGameStarted.asReadonly();
+
   private _currentPlayerTurn = signal<number>(0);
   readonly currentPlayerTurn = this._currentPlayerTurn.asReadonly();
 
-  constructor() {
-    this.initNewGame();
-  }
+  private _is7FlipCounterMode = signal<boolean>(true);
+  readonly is7FlipCounterMode = this._is7FlipCounterMode.asReadonly();
 
-  initNewGame(): void {
+  private _startPlayer = signal<Player | undefined>(undefined);
+  readonly startPlayer = this._startPlayer.asReadonly();
+
+  constructor() {
     this.loadAllPlayerFromStorage();
     this.loadGameStarted();
     this.loadStartPlayer();
     this.loadCurrentPlayerTurn();
-    this.loadDefaultCounterMode();
+    this.load7FlipCounterMode();
   }
 
   getPlayerById(playerId: string): Player {
@@ -40,17 +44,13 @@ export class GameService {
     return currentPlayer;
   }
 
-  getCurrentPlayerTurn(): Signal<number> {
-    return this._currentPlayerTurn.asReadonly();
-  }
-
-  getPlayerScore(playerId: string): number {
+  getPlayerScoreById(playerId: string): number {
     const currentPlayer = this.getPlayerById(playerId);
     return currentPlayer.score.reduce((sum: number, s: number) => sum + s, 0);
   }
 
   getWinner(): Player[] | Player {
-    const winners = this._players().filter((player) => this.getPlayerScore(player.id) >= this.goalScore);
+    const winners = this._players().filter((player) => this.getPlayerScoreById(player.id) >= this.goalScore);
 
     if (winners.length === 0) {
       return [];
@@ -62,77 +62,70 @@ export class GameService {
 
     let highestScore = 0;
     for (const player of winners) {
-      const score = this.getPlayerScore(player.id);
+      const score = this.getPlayerScoreById(player.id);
       if (score > highestScore) {
         highestScore = score;
       }
     }
 
-    return winners.filter((player) => this.getPlayerScore(player.id) === highestScore);
+    return winners.filter((player) => this.getPlayerScoreById(player.id) === highestScore);
   }
 
   setStartPlayer(player: Player): void {
-    this.startPlayer.set(player);
-    localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this.startPlayer()));
+    this._startPlayer.set(player);
+    localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this._startPlayer()));
   }
 
   setCurrentPlayerTurn(nextPosition: number): void {
     this._currentPlayerTurn.set(nextPosition);
-    localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this.currentPlayerTurn()));
-  }
-
-  isGameStarted(): Signal<boolean> {
-    return this.gameStarted.asReadonly();
+    localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this._currentPlayerTurn()));
   }
 
   isGameFinished(): boolean {
-    if (this.isDefaultCounterMode()) {
-      const winner = this._players().filter((player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
+    if (this._is7FlipCounterMode()) {
+      const winner = this._players().filter((player: Player) => this.getPlayerScoreById(player.id) >= this.goalScore);
 
       return winner.length > 0;
     }
     return false;
   }
 
-  isDefaultCounterMode(): boolean {
-    return this.defaultCounterMode();
-  }
-
   nextPlayerTurn(): void {
-    const nextPosition = this.currentPlayerTurn() >= this.players.length ? 1 : this.currentPlayerTurn() + 1;
+    const nextPosition = this._currentPlayerTurn() >= this._players().length ? 1 : this._currentPlayerTurn() + 1;
     this.setCurrentPlayerTurn(nextPosition);
   }
 
-  newGame(selectedPlayer?: Player): void {
-    if (selectedPlayer) {
-      this.newGameWithSamePlayers(selectedPlayer);
-    } else {
-      this.newEmptyGame();
-    }
-  }
-
   newGameWithSamePlayers(selectedPlayer: Player) {
-    this._players().forEach((player: Player): void => {
-      player.score = player.score.map(() => 0);
-    });
+    this._players.update((players) =>
+      players.map((p) => ({
+        ...p,
+        score: p.id === selectedPlayer.id ? [] : p.score.map(() => 0),
+      })),
+    );
+
     this.saveAllPlayerToStorage();
-    this.setGameStated(true);
+    this.setGameStarted(true);
 
     this.setStartPlayer(selectedPlayer);
     this.setCurrentPlayerTurn(selectedPlayer.position);
 
-    if (this.currentPlayerTurn() === 0) {
+    if (this._currentPlayerTurn() === 0) {
       this._currentPlayerTurn.set(1);
     }
   }
 
-  newEmptyGame() {
+  newEmptyGame(): void {
+    this._players.set([]);
+    this._isGameStarted.set(false);
+    this._currentPlayerTurn.set(0);
+    this._is7FlipCounterMode.set(true);
+    this._startPlayer.set(undefined);
+
     this.clearLocalStorage();
-    this.initNewGame();
   }
 
   createPlayer(name: string): void {
-    const position = this.players.length + 1;
+    const position = this._players().length + 1;
     const newPlayer: Player = {
       id: this.generateUniqueId(),
       position: position,
@@ -140,24 +133,19 @@ export class GameService {
       score: [],
     };
 
-    this._players().push(newPlayer);
-    this._players.set([...this.players()]);
-    //this._players.update((players) => [...this.players()]);
+    this._players.update((players) => [...players, newPlayer]);
     this.saveAllPlayerToStorage();
   }
 
   updatePlayerScore(playerId: string, roundScore: number): void {
-    const currentPlayer = this.getPlayerById(playerId);
-    currentPlayer.score.push(roundScore);
+    this._players.update((players) =>
+      players.map((p) => (p.id === playerId ? { ...p, score: [...p.score, roundScore] } : p)),
+    );
 
-    const playerIndex = this._players().findIndex((player) => player.id === playerId);
-    if (playerIndex > -1) {
-      this._players()[playerIndex] = currentPlayer;
-    }
     this.saveAllPlayerToStorage();
   }
 
-  deletePlayer(player: Player) {
+  deletePlayer(player: Player): void {
     const index = this._players().indexOf(player);
     if (index <= -1) {
       console.log('Spieler konnte nicht gelöscht werden. Index zu klein!');
@@ -183,10 +171,7 @@ export class GameService {
   }
 
   updatePlayerName(player: Player, newName: string): void {
-    const playerToUpdate = this._players().find((p) => p.id === player.id);
-    if (playerToUpdate) {
-      playerToUpdate.name = newName;
-    }
+    this._players.update((players) => players.map((p) => (p.id === player.id ? { ...p, name: newName } : p)));
     this.saveAllPlayerToStorage();
   }
 
@@ -199,9 +184,9 @@ export class GameService {
     this.saveAllPlayerToStorage();
   }
 
-  setDefaultCounterMode(defaultCounterMode: boolean) {
-    this.defaultCounterMode.set(defaultCounterMode);
-    localStorage.setItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE, JSON.stringify(this.defaultCounterMode()));
+  setDefaultCounterMode(defaultCounterMode: boolean): void {
+    this._is7FlipCounterMode.set(defaultCounterMode);
+    localStorage.setItem(this.STORAGE_KEY_7FLIPCOUNTERMODE, JSON.stringify(this._is7FlipCounterMode()));
   }
 
   clearLocalStorage(): void {
@@ -209,16 +194,16 @@ export class GameService {
     localStorage.removeItem(this.STORAGE_KEY_GAMESTARTED);
     localStorage.removeItem(this.STORAGE_KEY_STARTPLAYER);
     localStorage.removeItem(this.STORAGE_KEY_CURRPLAYERTURN);
-    localStorage.removeItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE);
+    localStorage.removeItem(this.STORAGE_KEY_7FLIPCOUNTERMODE);
   }
 
-  private setGameStated(started: boolean): void {
-    this.gameStarted.set(started);
-    localStorage.setItem(this.STORAGE_KEY_GAMESTARTED, JSON.stringify(this.gameStarted()));
+  private setGameStarted(started: boolean): void {
+    this._isGameStarted.set(started);
+    localStorage.setItem(this.STORAGE_KEY_GAMESTARTED, JSON.stringify(this._isGameStarted()));
   }
 
   private loadAllPlayerFromStorage(): void {
-    let load = localStorage.getItem(this.STORAGE_KEY_PLAYERS);
+    const load = localStorage.getItem(this.STORAGE_KEY_PLAYERS);
     let loadPlayers = [];
 
     if (!load || load === 'undefined') {
@@ -235,7 +220,7 @@ export class GameService {
 
   private loadStartPlayer(): void {
     const load = localStorage.getItem(this.STORAGE_KEY_STARTPLAYER);
-    this.startPlayer.set(load ? JSON.parse(load) : undefined);
+    this._startPlayer.set(load ? JSON.parse(load) : undefined);
   }
 
   private loadCurrentPlayerTurn(): void {
@@ -245,16 +230,16 @@ export class GameService {
 
   private loadGameStarted(): void {
     const load = localStorage.getItem(this.STORAGE_KEY_GAMESTARTED);
-    this.gameStarted.set(load ? JSON.parse(load) : false);
+    this._isGameStarted.set(load ? JSON.parse(load) : false);
   }
 
-  private loadDefaultCounterMode(): void {
-    const load = localStorage.getItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE);
-    this.defaultCounterMode.set(load ? JSON.parse(load) : false);
+  private load7FlipCounterMode(): void {
+    const load = localStorage.getItem(this.STORAGE_KEY_7FLIPCOUNTERMODE);
+    this._is7FlipCounterMode.set(load ? JSON.parse(load) : true);
   }
 
   private saveAllPlayerToStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY_PLAYERS, JSON.stringify(this.players));
+    localStorage.setItem(this.STORAGE_KEY_PLAYERS, JSON.stringify(this._players()));
   }
 
   private generateUniqueId(): string {
