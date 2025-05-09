@@ -16,7 +16,7 @@ import {MatCheckbox} from '@angular/material/checkbox';
 import {RegularPlayerListService} from '../../services/regular-player-list.service';
 
 @Component({
-  selector: 'app-add-player-matDialog',
+  selector: 'app-add-player-dialog',
   imports: [
     MatDialogClose,
     MatDialogActions,

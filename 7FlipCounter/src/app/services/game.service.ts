@@ -1,11 +1,11 @@
-import {Injectable, OnInit, Signal, signal} from '@angular/core';
+import {Injectable, Signal, signal} from '@angular/core';
 import {Player} from '../models/player';
 import {moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Injectable({
   providedIn: 'root'
 })
-export class GameService implements OnInit{
+export class GameService {
   private readonly STORAGE_KEY_PLAYERS = 'players';
   private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
   private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
@@ -18,7 +18,7 @@ export class GameService implements OnInit{
   private startPlayer = signal<Player | undefined >(undefined);
   private currentPlayerTurn = signal<number>(0);
 
-  ngOnInit(): void {
+  constructor() {
     this.loadAllPlayerFromStorage();
     this.loadGameStarted();
     this.loadStartPlayer();

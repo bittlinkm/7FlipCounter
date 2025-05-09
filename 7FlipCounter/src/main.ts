@@ -1,6 +1,6 @@
-import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
-import { AppComponent } from './app/app.component';
+import {bootstrapApplication} from '@angular/platform-browser';
+import {appConfig} from './app/app.config';
+import {AppComponent} from './app/app.component';
 import {importProvidersFrom, isDevMode} from '@angular/core';
 import {ServiceWorkerModule} from '@angular/service-worker';
 
@@ -12,10 +12,12 @@ const config = {
       ServiceWorkerModule.register('ngsw-worker.js', {
         enabled: !isDevMode(),
         registrationStrategy: 'registerWhenStable:30000'
+
+
       })
     )
   ]
 };
 
-bootstrapApplication(AppComponent, appConfig)
+bootstrapApplication(AppComponent, config)
   .catch((err) => console.error(err));

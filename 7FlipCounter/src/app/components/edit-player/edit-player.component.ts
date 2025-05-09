@@ -1,4 +1,4 @@
-import {Component, ElementRef, inject, model, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, model, OnInit, ViewChild} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -29,7 +29,7 @@ interface EditNameData {
   styleUrl: './edit-player.component.scss',
   standalone: true
 })
-export class EditPlayerComponent implements OnInit{
+export class EditPlayerComponent implements OnInit, AfterViewInit{
   readonly dialogRef = inject(MatDialogRef<EditPlayerComponent>);
   readonly data = inject<EditNameData>(MAT_DIALOG_DATA);
   @ViewChild('nameInput') nameInput!: ElementRef;
