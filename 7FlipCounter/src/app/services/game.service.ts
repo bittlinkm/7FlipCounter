@@ -1,24 +1,30 @@
-import {Injectable, Signal, signal} from '@angular/core';
-import {Player} from '../models/player';
-import {moveItemInArray} from '@angular/cdk/drag-drop';
+import { Injectable, Signal, signal } from '@angular/core';
+import { Player } from '../models/player';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GameService {
   private readonly STORAGE_KEY_PLAYERS = 'players';
   private readonly STORAGE_KEY_GAMESTARTED = 'gamestarted';
   private readonly STORAGE_KEY_STARTPLAYER = 'startplayer';
   private readonly STORAGE_KEY_CURRPLAYERTURN = 'currplayerturn';
-  private readonly STORAGE_KEY_DEFAULTCOUNTERMODE = 'defaultcountermode'
-  private readonly goalScore : number = 200;
-  private players: Player[] = [];
+  private readonly STORAGE_KEY_DEFAULTCOUNTERMODE = 'defaultcountermode';
+  private readonly goalScore: number = 200;
+  private _players = signal<Player[]>([]);
+  readonly players = this._players.asReadonly();
   private defaultCounterMode = signal<boolean>(true);
   private gameStarted = signal<boolean>(false);
-  private startPlayer = signal<Player | undefined >(undefined);
-  private currentPlayerTurn = signal<number>(0);
+  private startPlayer = signal<Player | undefined>(undefined);
+  private _currentPlayerTurn = signal<number>(0);
+  readonly currentPlayerTurn = this._currentPlayerTurn.asReadonly();
 
   constructor() {
+    this.initNewGame();
+  }
+
+  initNewGame(): void {
     this.loadAllPlayerFromStorage();
     this.loadGameStarted();
     this.loadStartPlayer();
@@ -26,12 +32,8 @@ export class GameService {
     this.loadDefaultCounterMode();
   }
 
-  getAllPlayer(): Player[] {
-    return this.players;
-  }
-
-  getPlayer(playerId: string): Player {
-    const currentPlayer = this.players.find( x => x.id === playerId );
+  getPlayerById(playerId: string): Player {
+    const currentPlayer = this._players().find((x) => x.id === playerId);
     if (!currentPlayer) {
       throw new Error(`Player with id ${playerId} not found in local storage.`);
     }
@@ -39,16 +41,16 @@ export class GameService {
   }
 
   getCurrentPlayerTurn(): Signal<number> {
-    return this.currentPlayerTurn.asReadonly();
+    return this._currentPlayerTurn.asReadonly();
   }
 
   getPlayerScore(playerId: string): number {
-    const currentPlayer = this.getPlayer(playerId);
-    return  currentPlayer.score.reduce((sum: number, s:number) => sum + s, 0);
+    const currentPlayer = this.getPlayerById(playerId);
+    return currentPlayer.score.reduce((sum: number, s: number) => sum + s, 0);
   }
 
   getWinner(): Player[] | Player {
-    const winners = this.players.filter( player => this.getPlayerScore(player.id) >= this.goalScore);
+    const winners = this._players().filter((player) => this.getPlayerScore(player.id) >= this.goalScore);
 
     if (winners.length === 0) {
       return [];
@@ -66,7 +68,7 @@ export class GameService {
       }
     }
 
-    return  winners.filter(player => this.getPlayerScore(player.id) === highestScore);
+    return winners.filter((player) => this.getPlayerScore(player.id) === highestScore);
   }
 
   setStartPlayer(player: Player): void {
@@ -75,7 +77,7 @@ export class GameService {
   }
 
   setCurrentPlayerTurn(nextPosition: number): void {
-    this.currentPlayerTurn.set(nextPosition);
+    this._currentPlayerTurn.set(nextPosition);
     localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this.currentPlayerTurn()));
   }
 
@@ -84,13 +86,12 @@ export class GameService {
   }
 
   isGameFinished(): boolean {
-    if(this.isDefaultCounterMode()){
-      const winner = this.players.filter(
-        (player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
+    if (this.isDefaultCounterMode()) {
+      const winner = this._players().filter((player: Player) => this.getPlayerScore(player.id) >= this.goalScore);
 
-      return winner.length > 0
+      return winner.length > 0;
     }
-    return false
+    return false;
   }
 
   isDefaultCounterMode(): boolean {
@@ -99,97 +100,116 @@ export class GameService {
 
   nextPlayerTurn(): void {
     const nextPosition = this.currentPlayerTurn() >= this.players.length ? 1 : this.currentPlayerTurn() + 1;
-    this.setCurrentPlayerTurn(nextPosition)
+    this.setCurrentPlayerTurn(nextPosition);
   }
 
-  newGame(selectedPlayer: Player): void {
-    this.players.forEach((player: Player): void => {
-      player.score = player.score.map(()=> 0);
+  newGame(selectedPlayer?: Player): void {
+    if (selectedPlayer) {
+      this.newGameWithSamePlayers(selectedPlayer);
+    } else {
+      this.newEmptyGame();
+    }
+  }
+
+  newGameWithSamePlayers(selectedPlayer: Player) {
+    this._players().forEach((player: Player): void => {
+      player.score = player.score.map(() => 0);
     });
     this.saveAllPlayerToStorage();
-    this.setGameStated(true)
+    this.setGameStated(true);
 
     this.setStartPlayer(selectedPlayer);
     this.setCurrentPlayerTurn(selectedPlayer.position);
 
     if (this.currentPlayerTurn() === 0) {
-      this.currentPlayerTurn.set(1);
+      this._currentPlayerTurn.set(1);
     }
   }
 
-  createPlayer(name: string): void{
-    const position = this.players.length +1;
+  newEmptyGame() {
+    this.clearLocalStorage();
+    this.initNewGame();
+  }
+
+  createPlayer(name: string): void {
+    const position = this.players.length + 1;
     const newPlayer: Player = {
       id: this.generateUniqueId(),
       position: position,
       name,
-      score: []
+      score: [],
     };
 
-    this.players.push(newPlayer);
+    this._players().push(newPlayer);
+    this._players.set([...this.players()]);
+    //this._players.update((players) => [...this.players()]);
     this.saveAllPlayerToStorage();
   }
 
   updatePlayerScore(playerId: string, roundScore: number): void {
-    const currentPlayer = this.getPlayer(playerId);
+    const currentPlayer = this.getPlayerById(playerId);
     currentPlayer.score.push(roundScore);
 
-    const playerIndex = this.players.findIndex(player => player.id === playerId);
+    const playerIndex = this._players().findIndex((player) => player.id === playerId);
     if (playerIndex > -1) {
-      this.players[playerIndex] = currentPlayer;
+      this._players()[playerIndex] = currentPlayer;
     }
     this.saveAllPlayerToStorage();
   }
 
   deletePlayer(player: Player) {
-    const index = this.players.indexOf(player);
-    if(index <= -1) {
-      console.log('Spieler konnte nicht gelöscht werden. Index zu klein!')
+    const index = this._players().indexOf(player);
+    if (index <= -1) {
+      console.log('Spieler konnte nicht gelöscht werden. Index zu klein!');
       return;
     }
 
-    const data = this.players;
+    const data = this._players();
     data.splice(index, 1);
-    this.players = [...data];
+    this._players.set([...data]);
 
-    this.players.forEach((item,index): void => {
+    this._players().forEach((item, index): void => {
       item.position = index + 1;
-    })
+    });
 
     this.updatePlayerPosition();
     this.saveAllPlayerToStorage();
   }
 
-  updatePlayerPosition(): void{
-    this.players.forEach((item,index): void => {
+  updatePlayerPosition(): void {
+    this._players().forEach((item, index): void => {
       item.position = index + 1;
-    })
+    });
   }
 
   updatePlayerName(player: Player, newName: string): void {
-    const playerToUpdate = this.players.find(p => p.id === player.id);
-    if(playerToUpdate) {
+    const playerToUpdate = this._players().find((p) => p.id === player.id);
+    if (playerToUpdate) {
       playerToUpdate.name = newName;
     }
     this.saveAllPlayerToStorage();
   }
 
   movePlayerPosition(previousIndex: number, currentIndex: number): void {
-    if(previousIndex !== currentIndex) {
-      moveItemInArray(this.players, previousIndex, currentIndex);
+    if (previousIndex !== currentIndex) {
+      moveItemInArray(this._players(), previousIndex, currentIndex);
       this.updatePlayerPosition();
-      this.players = [...this.players];
+      this._players.set([...this._players()]);
     }
     this.saveAllPlayerToStorage();
   }
 
   setDefaultCounterMode(defaultCounterMode: boolean) {
     this.defaultCounterMode.set(defaultCounterMode);
-    localStorage.setItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE,JSON.stringify(this.defaultCounterMode()));
+    localStorage.setItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE, JSON.stringify(this.defaultCounterMode()));
   }
 
   clearLocalStorage(): void {
     localStorage.removeItem(this.STORAGE_KEY_PLAYERS);
+    localStorage.removeItem(this.STORAGE_KEY_GAMESTARTED);
+    localStorage.removeItem(this.STORAGE_KEY_STARTPLAYER);
+    localStorage.removeItem(this.STORAGE_KEY_CURRPLAYERTURN);
+    localStorage.removeItem(this.STORAGE_KEY_DEFAULTCOUNTERMODE);
   }
 
   private setGameStated(started: boolean): void {
@@ -198,8 +218,19 @@ export class GameService {
   }
 
   private loadAllPlayerFromStorage(): void {
-    const saved = localStorage.getItem(this.STORAGE_KEY_PLAYERS);
-    this.players = saved ? JSON.parse(saved) : [];
+    let load = localStorage.getItem(this.STORAGE_KEY_PLAYERS);
+    let loadPlayers = [];
+
+    if (!load || load === 'undefined') {
+      return;
+    }
+
+    try {
+      loadPlayers = JSON.parse(load);
+    } catch (e) {
+      console.error('Fehler beim Parsen des JSON-Strings:', e);
+    }
+    this._players.set(loadPlayers);
   }
 
   private loadStartPlayer(): void {
@@ -209,7 +240,7 @@ export class GameService {
 
   private loadCurrentPlayerTurn(): void {
     const load = localStorage.getItem(this.STORAGE_KEY_CURRPLAYERTURN);
-    this.currentPlayerTurn.set(load ? JSON.parse(load) : 0);
+    this._currentPlayerTurn.set(load ? JSON.parse(load) : 0);
   }
 
   private loadGameStarted(): void {
@@ -230,10 +261,9 @@ export class GameService {
     let id: string;
 
     do {
-      id = crypto.randomUUID()
-    } while (this.players.some(player => player.id === id));
+      id = crypto.randomUUID();
+    } while (this._players().some((player) => player.id === id));
 
     return id;
   }
 }
-

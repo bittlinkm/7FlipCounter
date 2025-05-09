@@ -1,9 +1,11 @@
 import {
   AfterViewInit,
   Component,
+  effect,
   ElementRef,
   inject,
   linkedSignal,
+  model,
   OnDestroy,
   OnInit,
   QueryList,
@@ -30,7 +32,12 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { AddPlayerDialogComponent } from '../add-player-dialog/add-player-dialog.component';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+} from '@angular/cdk/drag-drop';
 import { MatIcon } from '@angular/material/icon';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -42,6 +49,7 @@ import { SelectStartplayerDialogComponent } from '../select-startplayer-dialog/s
 import { NgClass } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { EditPlayerComponent } from '../edit-player/edit-player.component';
+import { StartNewGameDialogComponent } from '../start-new-game-dialog/start-new-game-dialog.component';
 
 @Component({
   selector: 'app-content',
@@ -82,7 +90,8 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly editPlayersCheckBox = signal<boolean>(false);
   readonly tempScores = signal<Map<string, number>>(new Map());
   protected readonly isGameStarted = this.gameService.isGameStarted();
-  protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
+  protected readonly currentPlayerTurn =
+    this.gameService.getCurrentPlayerTurn();
   protected defaultCounterMode = signal<boolean>(true);
   isNextRoundValid = signal<boolean>(false);
   @ViewChild('table', { static: true }) table!: MatTable<Player>;
@@ -97,9 +106,14 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   });
 
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.gameService.players();
+    });
+  }
+
   ngOnInit() {
     this.editPlayersCheckBox.set(false);
-    this.dataSource.data = this.gameService.getAllPlayer();
 
     this.dataSource.sortingDataAccessor = (player, property) => {
       switch (property) {
@@ -147,8 +161,6 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
           this.gameService.createPlayer(result);
         }
-
-        this.dataSource.data = this.gameService.getAllPlayer();
       }
     });
   }
@@ -165,7 +177,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async openStartPlayerDialog(): Promise<Player | undefined> {
     const dialogRef = this.matDialog.open(SelectStartplayerDialogComponent, {
-      data: this.gameService.getAllPlayer(),
+      data: this.gameService.players(),
     });
 
     return await firstValueFrom(dialogRef.afterClosed());
@@ -173,30 +185,43 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   removePlayer(player: Player): void {
     this.gameService.deletePlayer(player);
-    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
-  async newGame(): Promise<void> {
+  async onNewGame(): Promise<void> {
     this.tempScores.set(new Map());
     this.roundInputs.forEach((input) => {
       input.nativeElement.value = '';
     });
 
+    const dialogRef = this.matDialog.open(StartNewGameDialogComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.newGameWithSamePlayers();
+      } else if (result === false) {
+        this.gameService.newGame();
+      } else {
+        return;
+      }
+    });
+  }
+
+  async newGameWithSamePlayers() {
     const selectedPlayer = await this.openStartPlayerDialog();
 
     if (selectedPlayer) {
       this.gameService.newGame(selectedPlayer);
     }
-    this.dataSource.data = this.gameService.getAllPlayer();
     this.isNextRoundValid.set(true);
   }
 
-  onNewRoundClick(): void {
+  onNextRound(): void {
     const missingRoundInput = this.hasAllPlayersRoundInput();
     if (missingRoundInput) {
-      alert(`Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`);
+      alert(
+        `Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`,
+      );
     } else {
-      this.newRound();
+      this.nextRound();
     }
   }
 
@@ -207,13 +232,12 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editPlayersCheckBox.set(false);
   }
 
-  newRound(): void {
+  nextRound(): void {
     this.tempScores().forEach((score, playerId) => {
       this.gameService.updatePlayerScore(playerId, score);
     });
 
     this.tempScores.set(new Map());
-    this.dataSource.data = this.gameService.getAllPlayer();
     this.gameService.nextPlayerTurn();
 
     this.roundInputs.forEach((input) => {
@@ -244,7 +268,12 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isCurrentPlayer(position: number): boolean {
-    return this.gameService.isGameStarted() && position === this.currentPlayerTurn();
+    const started = this.isGameStarted();
+    const turn = this.currentPlayerTurn();
+    console.log('game stared ' + started);
+    console.log('pos ' + position + ' turn ' + turn);
+
+    return this.isGameStarted() && position === this.currentPlayerTurn();
   }
 
   private hasAllPlayersRoundInput(): boolean {
@@ -268,10 +297,11 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
-    const previousIndex = this.dataSource.data.findIndex((d) => d === event.item.data);
+    const previousIndex = this.dataSource.data.findIndex(
+      (d) => d === event.item.data,
+    );
     const currentIndex = event.currentIndex;
     this.gameService.movePlayerPosition(previousIndex, currentIndex);
-    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
   keyUp(player: Player, event: KeyboardEvent): void {
@@ -288,7 +318,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const currPlayer = this.gameService.getPlayer(id);
+    const currPlayer = this.gameService.getPlayerById(id);
     const dialogRef = this.matDialog.open(EditPlayerComponent, {
       data: { name: currPlayer.name },
     });
@@ -299,7 +329,6 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log(newName);
       }
     });
-    this.dataSource.data = this.gameService.getAllPlayer();
   }
 
   ngOnDestroy(): void {
