@@ -1,0 +1,17 @@
+# auto-generated
+.angular/
+dist/
+coverage/
+node_modules/
+package-lock.json
+
+# not compatible with prettier
+.editorconfig
+.gitignore
+.gitkeep
+.prettierignore
+*.ico
+*.png
+*.jpg
+*.ttf
+*.txt

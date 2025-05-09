@@ -1,45 +1,52 @@
 import {
-  AfterViewInit, ChangeDetectorRef,
+  AfterViewInit,
   Component,
   ElementRef,
   inject,
   linkedSignal,
   OnDestroy,
-  OnInit, QueryList, signal,
+  OnInit,
+  QueryList,
+  signal,
   ViewChild,
-  ViewChildren
+  ViewChildren,
 } from '@angular/core';
-import {GameService} from '../../services/game.service';
-import {Player} from '../../models/player';
+import { GameService } from '../../services/game.service';
+import { Player } from '../../models/player';
 import {
   MatCell,
   MatCellDef,
   MatColumnDef,
-  MatHeaderCell, MatHeaderCellDef,
-  MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
   MatTable,
-  MatTableDataSource
+  MatTableDataSource,
 } from '@angular/material/table';
-import {SelectionModel} from '@angular/cdk/collections';
-import {MatDialog} from '@angular/material/dialog';
-import {AddPlayerDialogComponent} from '../add-player-dialog/add-player-dialog.component';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
-import {MatIcon} from '@angular/material/icon';
-import {ConfirmDialogComponent} from '../confirm-dialog/confirm-dialog.component';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {MatSort, MatSortHeader, Sort} from '@angular/material/sort';
-import {LiveAnnouncer} from '@angular/cdk/a11y';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {FormsModule} from '@angular/forms';
-import {SelectStartplayerDialogComponent} from '../select-startplayer-dialog/select-startplayer-dialog.component';
-import {NgClass} from '@angular/common';
-import {firstValueFrom, Observable} from 'rxjs';
-import {EditPlayerComponent} from '../edit-player/edit-player.component';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatDialog } from '@angular/material/dialog';
+import { AddPlayerDialogComponent } from '../add-player-dialog/add-player-dialog.component';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
+import { MatIcon } from '@angular/material/icon';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSort, MatSortHeader, Sort } from '@angular/material/sort';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+import { SelectStartplayerDialogComponent } from '../select-startplayer-dialog/select-startplayer-dialog.component';
+import { NgClass } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
+import { EditPlayerComponent } from '../edit-player/edit-player.component';
 
 @Component({
   selector: 'app-content',
-  imports: [MatTable,
+  imports: [
+    MatTable,
     MatButton,
     MatColumnDef,
     MatHeaderCell,
@@ -52,32 +59,41 @@ import {EditPlayerComponent} from '../edit-player/edit-player.component';
     MatRowDef,
     CdkDropList,
     MatIcon,
-    CdkDrag, CdkDragHandle, MatIconButton, MatProgressSpinner, MatSort, MatSortHeader, MatCheckbox, FormsModule, NgClass],
+    CdkDrag,
+    CdkDragHandle,
+    MatIconButton,
+    MatProgressSpinner,
+    MatSort,
+    MatSortHeader,
+    MatCheckbox,
+    FormsModule,
+    NgClass,
+  ],
   templateUrl: './content.component.html',
   styleUrl: './content.component.scss',
-  standalone: true
+  standalone: true,
 })
 export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
- readonly gameService = inject(GameService);
- private _liveAnnouncer = inject(LiveAnnouncer);
- readonly matDialog = inject(MatDialog);
- protected dataSource = new MatTableDataSource<Player>([]);
- protected selection = new SelectionModel<Player>(false, []);
- readonly editPlayersCheckBox = signal<boolean>(false);
- readonly tempScores = signal<Map<string, number>>(new Map());
- protected readonly isGameStarted = this.gameService.isGameStarted()
- protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
- protected defaultCounterMode = signal<boolean>(true);
- isNextRoundValid = signal<boolean>(false);
- @ViewChild('table', {static: true}) table!: MatTable<Player>;
- @ViewChild(MatSort) sort!: MatSort;
- @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
+  readonly gameService = inject(GameService);
+  private _liveAnnouncer = inject(LiveAnnouncer);
+  readonly matDialog = inject(MatDialog);
+  protected dataSource = new MatTableDataSource<Player>([]);
+  protected selection = new SelectionModel<Player>(false, []);
+  readonly editPlayersCheckBox = signal<boolean>(false);
+  readonly tempScores = signal<Map<string, number>>(new Map());
+  protected readonly isGameStarted = this.gameService.isGameStarted();
+  protected readonly currentPlayerTurn = this.gameService.getCurrentPlayerTurn();
+  protected defaultCounterMode = signal<boolean>(true);
+  isNextRoundValid = signal<boolean>(false);
+  @ViewChild('table', { static: true }) table!: MatTable<Player>;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChildren('roundInput') roundInputs!: QueryList<ElementRef>;
 
   linkedDisplayedColumns = linkedSignal(() => {
     if (this.editPlayersCheckBox()) {
-      return ['delete','order', 'position', 'name', 'score', 'roundInput'];
+      return ['delete', 'order', 'position', 'name', 'score', 'roundInput'];
     } else {
-      return ['position','name', 'score', 'roundInput'];
+      return ['position', 'name', 'score', 'roundInput'];
     }
   });
 
@@ -92,7 +108,7 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
         case 'position':
           return Number(player.position);
         default:
-          return player[property];
+          return player[property] as string | number;
       }
     };
   }
@@ -111,23 +127,21 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   spinnerValue(player: Player): number {
     const tempScore = this.tempScores().get(player.id) || 0;
-    return (this.gameService.getPlayerScore(player.id) + tempScore)/2;
+    return (this.gameService.getPlayerScore(player.id) + tempScore) / 2;
   }
 
   counter(player: Player): number {
     const tempScore = this.tempScores().get(player.id) || 0;
-    return this.gameService.getPlayerScore(player.id)+tempScore;
+    return this.gameService.getPlayerScore(player.id) + tempScore;
   }
 
   openAddPlayerDialog() {
     const dialogRef = this.matDialog.open(AddPlayerDialogComponent);
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined) {
-
         if (Array.isArray(result)) {
-
-          result.forEach(playerName => {
+          result.forEach((playerName) => {
             this.gameService.createPlayer(playerName);
           });
         } else {
@@ -142,16 +156,16 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   openDeleteDialog(player: Player): void {
     const dialogRef = this.matDialog.open(ConfirmDialogComponent);
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         this.removePlayer(player);
       }
-    })
+    });
   }
 
   async openStartPlayerDialog(): Promise<Player | undefined> {
     const dialogRef = this.matDialog.open(SelectStartplayerDialogComponent, {
-      data: this.gameService.getAllPlayer()
+      data: this.gameService.getAllPlayer(),
     });
 
     return await firstValueFrom(dialogRef.afterClosed());
@@ -164,13 +178,13 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async newGame(): Promise<void> {
     this.tempScores.set(new Map());
-    this.roundInputs.forEach(input => {
+    this.roundInputs.forEach((input) => {
       input.nativeElement.value = '';
     });
 
-    const selectedPlayer = await this.openStartPlayerDialog()
+    const selectedPlayer = await this.openStartPlayerDialog();
 
-    if(selectedPlayer){
+    if (selectedPlayer) {
       this.gameService.newGame(selectedPlayer);
     }
     this.dataSource.data = this.gameService.getAllPlayer();
@@ -179,14 +193,14 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onNewRoundClick(): void {
     const missingRoundInput = this.hasAllPlayersRoundInput();
-    if(missingRoundInput) {
+    if (missingRoundInput) {
       alert(`Folgende Spieler haben keine Punkte eingegeben: ${this.getPlayersWithoutRoundInput()}`);
     } else {
       this.newRound();
     }
   }
 
-  onToggleCounterMode(): void{
+  onToggleCounterMode(): void {
     this.defaultCounterMode.set(this.gameService.isDefaultCounterMode());
     this.defaultCounterMode.set(!this.defaultCounterMode());
     this.gameService.setDefaultCounterMode(this.defaultCounterMode());
@@ -202,10 +216,10 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource.data = this.gameService.getAllPlayer();
     this.gameService.nextPlayerTurn();
 
-    this.roundInputs.forEach(input => {
+    this.roundInputs.forEach((input) => {
       input.nativeElement.value = '';
-    })
-    if(this.defaultCounterMode()){
+    });
+    if (this.defaultCounterMode()) {
       this.checkEndGame();
     }
   }
@@ -215,10 +229,10 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
       const winner = this.gameService.getWinner();
       let winnerMessage: string = 'Spiel beendet. Gewinner: ';
 
-      if(Array.isArray(winner)) {
-        const winnerString = winner.map(winner => winner.name).join(', ');
+      if (Array.isArray(winner)) {
+        const winnerString = winner.map((winner) => winner.name).join(', ');
         winnerMessage += winnerString;
-      } else if(winner) {
+      } else if (winner) {
         winnerMessage += winner.name;
       } else {
         winnerMessage = 'Spiel beendet. Kein Gewinner';
@@ -238,25 +252,25 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
     return !!playersWithoutRoundInput;
   }
 
-  private getPlayersWithoutRoundInput(): string | false{
+  private getPlayersWithoutRoundInput(): string | false {
     const playersWithoutRoundInput: string[] = [];
 
-    this.dataSource.data.forEach(player => {
-      if(!this.tempScores().has(player.id)) {
+    this.dataSource.data.forEach((player) => {
+      if (!this.tempScores().has(player.id)) {
         playersWithoutRoundInput.push(player.name);
       }
     });
 
     if (playersWithoutRoundInput.length > 0) {
-      return  playersWithoutRoundInput.join(', ');
+      return playersWithoutRoundInput.join(', ');
     }
     return false;
   }
 
   dragAndDrop(event: CdkDragDrop<Player[]>): void {
-    const previousIndex = this.dataSource.data.findIndex(d => d === event.item.data);
+    const previousIndex = this.dataSource.data.findIndex((d) => d === event.item.data);
     const currentIndex = event.currentIndex;
-    this.gameService.movePlayerPosition(previousIndex,currentIndex);
+    this.gameService.movePlayerPosition(previousIndex, currentIndex);
     this.dataSource.data = this.gameService.getAllPlayer();
   }
 
@@ -270,21 +284,21 @@ export class ContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editName(id: string) {
-    if(!this.editPlayersCheckBox()){
+    if (!this.editPlayersCheckBox()) {
       return;
     }
 
     const currPlayer = this.gameService.getPlayer(id);
     const dialogRef = this.matDialog.open(EditPlayerComponent, {
-      data: {name: currPlayer.name},
+      data: { name: currPlayer.name },
     });
 
-    dialogRef.afterClosed().subscribe( newName => {
-      if(newName){
+    dialogRef.afterClosed().subscribe((newName) => {
+      if (newName) {
         this.gameService.updatePlayerName(currPlayer, newName);
         console.log(newName);
       }
-    })
+    });
     this.dataSource.data = this.gameService.getAllPlayer();
   }
 
