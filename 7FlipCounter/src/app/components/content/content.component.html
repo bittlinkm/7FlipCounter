@@ -1,7 +1,7 @@
 <main>
   <header>
     <button mat-raised-button (click)="openAddPlayerDialog()">Spieler hinzufügen</button>
-    <button mat-raised-button (click)="newGame()">Neues Spiel</button>
+    <button mat-raised-button (click)="onNewGame()">Neues Spiel</button>
     <mat-checkbox [(ngModel)]="editPlayersCheckBox" (ngModelChange)="editPlayersCheckBox.set($event)">Bearbeiten</mat-checkbox>
   </header>
 
@@ -98,10 +98,10 @@
     <div class="table-end-container">
       @if (editPlayersCheckBox()){
         <button mat-raised-button (click)="onToggleCounterMode()">
-          {{ this.gameService.isDefaultCounterMode() ? 'Normaler Zähler' : '7 Flip'}}
+          {{ this.gameService.is7FlipCounterMode() ? 'Normaler Zähler' : '7 Flip'}}
         </button>
       }
-      <button mat-raised-button (click)="onNewRoundClick()" [disabled]="!isNextRoundValid()">Nächste Runde</button>
+      <button mat-raised-button (click)="onNextRound()" [disabled]="!isNextRoundValid()">Nächste Runde</button>
     </div>
   </section>
 </main>
