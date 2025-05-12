@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 import { Player } from '../models/player';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -34,6 +34,26 @@ export class GameService {
     this.loadStartPlayer();
     this.loadCurrentPlayerTurn();
     this.load7FlipCounterMode();
+
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY_PLAYERS, JSON.stringify(this._players()));
+    });
+
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY_GAMESTARTED, JSON.stringify(this._isGameStarted()));
+    });
+
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this._startPlayer()));
+    });
+
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY_CURRPLAYERTURN, JSON.stringify(this._currentPlayerTurn()));
+    });
+
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY_7FLIPCOUNTERMODE, JSON.stringify(this._is7FlipCounterMode()));
+    });
   }
 
   getPlayerById(playerId: string): Player {
@@ -103,7 +123,6 @@ export class GameService {
       })),
     );
 
-    this.saveAllPlayerToStorage();
     this.setGameStarted(true);
 
     this.setStartPlayer(selectedPlayer);
@@ -134,72 +153,53 @@ export class GameService {
     };
 
     this._players.update((players) => [...players, newPlayer]);
-    this.saveAllPlayerToStorage();
   }
 
   updatePlayerScore(playerId: string, roundScore: number): void {
     this._players.update((players) =>
       players.map((p) => (p.id === playerId ? { ...p, score: [...p.score, roundScore] } : p)),
     );
-
-    this.saveAllPlayerToStorage();
   }
 
   deletePlayer(player: Player): void {
-    const index = this._players().indexOf(player);
-    if (index <= -1) {
-      console.log('Spieler konnte nicht gelöscht werden. Index zu klein!');
-      return;
-    }
-
-    const data = this._players();
-    data.splice(index, 1);
-    this._players.set([...data]);
-
-    this._players().forEach((item, index): void => {
-      item.position = index + 1;
-    });
-
-    this.updatePlayerPosition();
-    this.saveAllPlayerToStorage();
-  }
-
-  updatePlayerPosition(): void {
-    this._players().forEach((item, index): void => {
-      item.position = index + 1;
-    });
+    this._players.update((players) =>
+      players.filter((p) => p.id !== player.id).map((p, idx) => ({ ...p, position: idx + 1 })),
+    );
   }
 
   updatePlayerName(player: Player, newName: string): void {
     this._players.update((players) => players.map((p) => (p.id === player.id ? { ...p, name: newName } : p)));
-    this.saveAllPlayerToStorage();
   }
 
   movePlayerPosition(previousIndex: number, currentIndex: number): void {
-    if (previousIndex !== currentIndex) {
-      moveItemInArray(this._players(), previousIndex, currentIndex);
-      this.updatePlayerPosition();
-      this._players.set([...this._players()]);
+    if (previousIndex === currentIndex) {
+      return;
     }
-    this.saveAllPlayerToStorage();
+    this._players.update((players) => {
+      const arr = [...players];
+      moveItemInArray(arr, previousIndex, currentIndex);
+      return arr.map((p, idx) => ({ ...p, position: idx + 1 }));
+    });
   }
 
   setDefaultCounterMode(defaultCounterMode: boolean): void {
     this._is7FlipCounterMode.set(defaultCounterMode);
-    localStorage.setItem(this.STORAGE_KEY_7FLIPCOUNTERMODE, JSON.stringify(this._is7FlipCounterMode()));
   }
 
   clearLocalStorage(): void {
-    localStorage.removeItem(this.STORAGE_KEY_PLAYERS);
-    localStorage.removeItem(this.STORAGE_KEY_GAMESTARTED);
-    localStorage.removeItem(this.STORAGE_KEY_STARTPLAYER);
-    localStorage.removeItem(this.STORAGE_KEY_CURRPLAYERTURN);
-    localStorage.removeItem(this.STORAGE_KEY_7FLIPCOUNTERMODE);
+    [
+      this.STORAGE_KEY_PLAYERS,
+      this.STORAGE_KEY_GAMESTARTED,
+      this.STORAGE_KEY_STARTPLAYER,
+      this.STORAGE_KEY_CURRPLAYERTURN,
+      this.STORAGE_KEY_7FLIPCOUNTERMODE,
+    ].forEach((key) => {
+      localStorage.removeItem(key);
+    });
   }
 
   private setGameStarted(started: boolean): void {
     this._isGameStarted.set(started);
-    localStorage.setItem(this.STORAGE_KEY_GAMESTARTED, JSON.stringify(this._isGameStarted()));
   }
 
   private loadAllPlayerFromStorage(): void {
@@ -236,10 +236,6 @@ export class GameService {
   private load7FlipCounterMode(): void {
     const load = localStorage.getItem(this.STORAGE_KEY_7FLIPCOUNTERMODE);
     this._is7FlipCounterMode.set(load ? JSON.parse(load) : true);
-  }
-
-  private saveAllPlayerToStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY_PLAYERS, JSON.stringify(this._players()));
   }
 
   private generateUniqueId(): string {

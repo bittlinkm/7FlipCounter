@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import {SwUpdate, VersionReadyEvent} from '@angular/service-worker';
-import {filter} from 'rxjs';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { filter } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UpdateService {
-
   constructor(private swUpdate: SwUpdate) {
     if (swUpdate.isEnabled) {
       swUpdate.versionUpdates
