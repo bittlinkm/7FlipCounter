@@ -4,5 +4,6 @@
     <option name="myConfigurationMode" value="AUTOMATIC" />
     <option name="myRunOnSave" value="true" />
     <option name="myFilesPattern" value="**/*.{js,ts,jsx,tsx,vue,astro,json}" />
+    <option name="customIgnorePath" value="C:\Users\sasch\source\repos\7FlipCounter\7FlipCounter\.prettierignore" />
   </component>
 </project>

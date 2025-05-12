@@ -1,4 +1,4 @@
- export const regularPlayer: string[] = [
+export const regularPlayer: string[] = [
   'Günter',
   'Sandra',
   'Mario',
@@ -11,7 +11,5 @@
   'Petra',
   'Oli',
   'Anna',
-  'Tobias'
+  'Tobias',
 ];
-
-
