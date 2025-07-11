@@ -44,7 +44,12 @@ export class GameService {
     });
 
     effect(() => {
-      localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(this._startPlayer()));
+      const player = this._startPlayer();
+      if (player === undefined) {
+        localStorage.removeItem(this.STORAGE_KEY_STARTPLAYER);
+      } else {
+        localStorage.setItem(this.STORAGE_KEY_STARTPLAYER, JSON.stringify(player));
+      }
     });
 
     effect(() => {
@@ -219,8 +224,18 @@ export class GameService {
   }
 
   private loadStartPlayer(): void {
-    const load = localStorage.getItem(this.STORAGE_KEY_STARTPLAYER);
-    this._startPlayer.set(load ? JSON.parse(load) : undefined);
+    const raw = localStorage.getItem(this.STORAGE_KEY_STARTPLAYER);
+
+    if (raw !== null && raw !== 'undefined') {
+      try {
+        this._startPlayer.set(JSON.parse(raw));
+      } catch {
+        console.warn('Konnte Startplayer nicht parsen:', raw);
+        this._startPlayer.set(undefined);
+      }
+    } else {
+      this._startPlayer.set(undefined);
+    }
   }
 
   private loadCurrentPlayerTurn(): void {
