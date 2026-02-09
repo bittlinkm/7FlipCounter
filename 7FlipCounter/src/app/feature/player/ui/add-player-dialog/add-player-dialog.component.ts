@@ -8,12 +8,12 @@ import {
 } from '@angular/material/dialog';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { ContentComponent } from '../content/content.component';
 import { Player } from '../../models/player';
 import { MatInput } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { RegularPlayerListService } from '../../services/regular-player-list.service';
+import { ContentComponent } from '../../../7flip/content/content.component';
+import { RegularPlayerListService } from '../../../../core/services/regular-player-list.service';
 
 @Component({
   selector: 'app-add-player-dialog',

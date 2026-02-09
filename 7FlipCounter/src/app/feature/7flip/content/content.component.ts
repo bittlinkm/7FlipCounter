@@ -13,8 +13,6 @@ import {
   ViewChild,
   ViewChildren,
 } from '@angular/core';
-import { GameService } from '../../services/game.service';
-import { Player } from '../../models/player';
 import {
   MatCell,
   MatCellDef,
@@ -30,11 +28,9 @@ import {
 } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
-import { AddPlayerDialogComponent } from '../add-player-dialog/add-player-dialog.component';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { MatIcon } from '@angular/material/icon';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSort, MatSortHeader, Sort } from '@angular/material/sort';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -43,8 +39,12 @@ import { FormsModule } from '@angular/forms';
 import { SelectStartplayerDialogComponent } from '../select-startplayer-dialog/select-startplayer-dialog.component';
 import { NgClass } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { EditPlayerComponent } from '../edit-player/edit-player.component';
 import { StartNewGameDialogComponent } from '../start-new-game-dialog/start-new-game-dialog.component';
+import { GameService } from '../services/game.service';
+import { Player } from '../../player/models/player';
+import { AddPlayerDialogComponent } from '../../player/ui/add-player-dialog/add-player-dialog.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { EditPlayerComponent } from '../../player/ui/edit-player/edit-player.component';
 
 @Component({
   selector: 'app-content',

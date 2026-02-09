@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { ContentComponent } from './components/content/content.component';
-import { UpdateService } from './services/update.service';
+import { ContentComponent } from './feature/7flip/content/content.component';
+import { UpdateService } from './core/services/update.service';
 
 @Component({
   selector: 'app-root',

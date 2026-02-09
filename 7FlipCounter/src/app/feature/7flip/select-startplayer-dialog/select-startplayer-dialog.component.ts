@@ -1,10 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
-import { Player } from '../../models/player';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogClose, MatDialogRef } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { ContentComponent } from '../content/content.component';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
+import { Player } from '../../player/models/player';
 
 @Component({
   selector: 'app-select-startplayer-dialog',

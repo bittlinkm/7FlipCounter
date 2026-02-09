@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { Player } from '../models/player';
 import { regularPlayer } from '../config/regular-player-list';
+import { Player } from '../../feature/player/models/player';
 
 @Injectable({
   providedIn: 'root',

@@ -1,6 +1,6 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { Player } from '../models/player';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { Player } from '../../player/models/player';
 
 @Injectable({
   providedIn: 'root',
